@@ -3,16 +3,47 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Docopt\Response;
+
 $doc = <<<DOC
 Generate diff
 
 Usage:
   gendiff (-h|--help)
   gendiff (-v|--version)
+  gendiff [--format <fmt>] <firstFile> <secondFile>
 
 Options:
   -h --help                     Show this screen
   -v --version                  Show version
+  --format <fmt>                Report format [default: stylish]
 DOC;
 
-$args = Docopt::handle($doc, array('version' => 'Gendiff 1.0'));
+try {
+    $args = Docopt::handle($doc, ['version' => 'Gendiff 1.0']);
+    
+    if ($args['--help']) {
+        echo $doc;
+        exit(0);
+    }
+    
+    if ($args['--version']) {
+        echo "Gendiff 1.0\n";
+        exit(0);
+    }
+    
+    if (isset($args['<firstFile>']) && isset($args['<secondFile>'])) {
+        $format = isset($args['--format']) ? (string)$args['--format'] : 'stylish';
+        $firstFile = (string)$args['<firstFile>'];
+        $secondFile = (string)$args['<secondFile>'];
+        
+        echo "Comparing files:\n";
+        echo "First file: " . $firstFile . "\n";
+        echo "Second file: " . $secondFile . "\n";
+        echo "Output format: " . $format . "\n";
+    }
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
+    echo $doc;
+    exit(1);
+}
