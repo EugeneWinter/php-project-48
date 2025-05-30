@@ -1,0 +1,16 @@
+{
+  "name": "hexlet/code",
+  "description": "Generate diff",
+  "type": "project",
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "Hexlet\\Code\\": "src/"
+    }
+  },
+  "bin": ["bin/gendiff"],
+  "require": {
+    "docopt/docopt": "^1.0"
+  }
+}
