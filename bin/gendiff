@@ -1,0 +1,57 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Docopt\Handler;
+use function DiffGenerator\genDiff;
+
+$handler = new Handler();
+
+$doc = <<<'DOC'
+Generate diff
+
+Usage:
+  gendiff (-h|--help)
+  gendiff (-v|--version)
+  gendiff [--format <fmt>] <firstFile> <secondFile>
+
+Options:
+  -h --help                     Show this screen
+  -v --version                  Show version
+  --format <fmt>                Report format [default: stylish]
+DOC;
+
+try {
+    $response = $handler->handle($doc);
+    
+    if ($response['--help']) {
+        echo $doc;
+        exit(0);
+    }
+    
+    if ($response['--version']) {
+        echo "gendiff 1.0.0\n";
+        exit(0);
+    }
+    
+    if (isset($response['<firstFile>']) && isset($response['<secondFile>'])) {
+
+        $firstFile = $response['<firstFile>'];
+        $secondFile = $response['<secondFile>'];
+        
+        if (!is_string($firstFile) || !is_string($secondFile)) {
+            throw new \RuntimeException("File paths must be strings");
+        }
+        
+        echo genDiff($firstFile, $secondFile) . PHP_EOL;
+        exit(0);
+    }
+    
+    echo $doc;
+    exit(1);
+    
+} catch (\Exception $e) {
+    echo "Error: " . $e->getMessage() . PHP_EOL;
+    exit(1);
+}
