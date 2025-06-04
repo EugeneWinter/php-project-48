@@ -1,0 +1,11 @@
+{
+    "timeout": {
+        "type": "changed",
+        "oldValue": 50,
+        "newValue": 20
+    },
+    "verbose": {
+        "type": "added",
+        "value": true
+    }
+}

@@ -3,6 +3,9 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true">
+    <php>
+        <ini name="auto_detect_line_endings" value="true"/>
+    </php>
     <testsuites>
         <testsuite name="Diff Generator Test Suite">
             <directory>tests</directory>

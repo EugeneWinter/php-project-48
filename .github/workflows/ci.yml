@@ -1,39 +1,51 @@
 name: CI
-
 on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.2']
+    name: PHP ${{ matrix.php }}
     steps:
-    - uses: actions/checkout@v3 
-    
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.1'
-        coverage: pcov 
-        tools: composer
-        
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-interaction
-    
-    - name: Run tests with coverage
-      run: |
-        mkdir -p build/logs
-        vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-        
-    - name: Run linter
-      run: vendor/bin/phpcs --standard=PSR12 src tests bin/gendiff
-    
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=EugeneWinter_php-project-48
-          -Dsonar.organization=eugenewinter
-          -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
-          -Dsonar.php.tests.reportPath=build/logs/junit.xml
+      - uses: actions/checkout@v3
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: pcov
+          tools: composer:v2
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+      
+      - name: Run tests with coverage
+        run: vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+      
+      - name: Send to SonarCloud
+        if: github.ref == 'refs/heads/main'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          composer require sonar-tools/php-scanner --dev
+          vendor/bin/sonar-scanner
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+      
+      - name: Run lint
+        run: composer lint

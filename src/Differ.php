@@ -2,64 +2,130 @@
 
 namespace DiffGenerator;
 
-function genDiff(string $path1, string $path2): string
+use DiffGenerator\Parsers\ParserFactory;
+use DiffGenerator\Formatters\{
+    StylishFormatter,
+    PlainFormatter,
+    JsonFormatter
+};
+
+function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
-    if (empty($path1) || empty($path2)) {
-        throw new \InvalidArgumentException("File paths cannot be empty");
+    if (!file_exists($path1)) {
+        throw new \RuntimeException("File not found: {$path1}");
     }
-    
-    $data1 = (array)parseFile($path1);
-    $data2 = (array)parseFile($path2);
-    
+
+    if (!file_exists($path2)) {
+        throw new \RuntimeException("File not found: {$path2}");
+    }
+
+    $content1 = file_get_contents($path1);
+    $content2 = file_get_contents($path2);
+
+    if ($content1 === false || $content2 === false) {
+        throw new \RuntimeException("Failed to read file contents");
+    }
+
+    try {
+        $format1 = ParserFactory::getFormat($path1);
+        $format2 = ParserFactory::getFormat($path2);
+        
+        if ($format1 !== $format2) {
+            throw new \RuntimeException("Different file formats: {$format1} and {$format2}");
+        }
+
+        $data1 = ParserFactory::parse($content1, $format1);
+        $data2 = ParserFactory::parse($content2, $format2);
+    } catch (\Exception $e) {
+        throw new \RuntimeException("Parse error: " . $e->getMessage());
+    }
+
+    $diff = buildDiff($data1, $data2);
+
+    try {
+        return formatDiff($diff, $format);
+    } catch (\Exception $e) {
+        throw new \RuntimeException("Format error: " . $e->getMessage());
+    }
+}
+
+function buildDiff(object $data1, object $data2): array
+{
     $keys = array_unique(array_merge(
-        array_keys($data1),
-        array_keys($data2)
+        array_keys((array)$data1),
+        array_keys((array)$data2)
     ));
     sort($keys);
 
-    $lines = [];
-    foreach ($keys as $key) {
-        $value1 = $data1[$key] ?? null;
-        $value2 = $data2[$key] ?? null;
-
-        if (!array_key_exists($key, $data1)) {
-            $lines[] = "  + $key: " . stringifyValue($value2);
-            continue;
-        }
-        
-        if (!array_key_exists($key, $data2)) {
-            $lines[] = "  - $key: " . stringifyValue($value1);
-            continue;
-        }
-        
-        if ($value1 === $value2) {
-            $lines[] = "    $key: " . stringifyValue($value1);
-            continue;
-        }
-        
-        $lines[] = "  - $key: " . stringifyValue($value1);
-        $lines[] = "  + $key: " . stringifyValue($value2);
-    }
-
-    return "{\n" . implode("\n", $lines) . "\n}";
+    return array_map(function ($key) use ($data1, $data2) {
+        return buildNode($key, $data1, $data2);
+    }, $keys);
 }
 
-function stringifyValue(mixed $value): string
+function buildNode(string $key, object $data1, object $data2): array
 {
-    return json_encode($value, JSON_UNESCAPED_UNICODE);
+    $value1 = $data1->$key ?? null;
+    $value2 = $data2->$key ?? null;
+
+    if (!property_exists($data1, $key)) {
+        return [
+            'type' => 'added',
+            'key' => $key,
+            'value' => prepareValue($value2)
+        ];
+    }
+
+    if (!property_exists($data2, $key)) {
+        return [
+            'type' => 'removed',
+            'key' => $key,
+            'value' => prepareValue($value1)
+        ];
+    }
+
+    if (isObject($value1) && isObject($value2)) {
+        return [
+            'type' => 'nested',
+            'key' => $key,
+            'children' => buildDiff($value1, $value2)
+        ];
+    }
+
+    if ($value1 === $value2) {
+        return [
+            'type' => 'unchanged',
+            'key' => $key,
+            'value' => prepareValue($value1)
+        ];
+    }
+
+    return [
+        'type' => 'changed',
+        'key' => $key,
+        'oldValue' => prepareValue($value1),
+        'newValue' => prepareValue($value2)
+    ];
 }
 
-function parseFile(string $path): object
+function isObject(mixed $value): bool
 {
-    $content = file_get_contents($path);
-    if ($content === false) {
-        throw new \RuntimeException("Failed to read file: {$path}");
+    return is_object($value) && !($value instanceof \DateTime);
+}
+
+function prepareValue(mixed $value): mixed
+{
+    return is_object($value) ? (array)$value : $value;
+}
+
+function formatDiff(array $diff, string $format): string
+{
+    switch ($format) {
+        case 'plain':
+            return PlainFormatter::format($diff);
+        case 'json':
+            return JsonFormatter::format($diff);
+        case 'stylish':
+        default:
+            return StylishFormatter::format($diff);
     }
-    
-    $data = json_decode($content);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \RuntimeException("JSON parse error: " . json_last_error_msg());
-    }
-    
-    return $data;
 }
