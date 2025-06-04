@@ -1,4 +1,3 @@
-```markdown
 # Вычислитель отличий (Diff Generator)
 
 [![Actions Status](https://github.com/EugeneWinter/php-project-48/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/EugeneWinter/php-project-48/actions)
