@@ -11,7 +11,7 @@ class YamlParser implements ParserInterface
     {
         try {
             return Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new Exception("YAML parse error: " . $e->getMessage());
         }
     }

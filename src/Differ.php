@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Генератор различий между файлами
+ *
+ * Сравнивает два файла (JSON/YAML) и возвращает различия в указанном формате
+ *
+ * @category DiffGenerator
+ * @package  DiffGenerator
+ * @author   EugeneWinter corvoattano200529@gmail.com
+ * @license  MIT https://opensource.org/licenses/MIT
+ * @link     https://github.com/EugeneWinter/php-project-48
+ */
+
 namespace DiffGenerator;
 
 use DiffGenerator\Parsers\ParserFactory;
@@ -9,6 +21,17 @@ use DiffGenerator\Formatters\{
     JsonFormatter
 };
 
+/**
+ * Генерирует различия между двумя файлами
+ *
+ * @param string $path1 Путь к первому файлу
+ * @param string $path2 Путь ко второму файлу
+ * @param string $format Формат вывода (stylish, plain, json)
+ *
+ * @return string Различия в указанном формате
+ *
+ * @throws \RuntimeException Если файлы не существуют или имеют разные форматы
+ */
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
     if (!file_exists($path1)) {
@@ -49,19 +72,41 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
     }
 }
 
+/**
+ * Строит дерево различий между двумя объектами
+ *
+ * @param object $data1 Первый объект для сравнения
+ * @param object $data2 Второй объект для сравнения
+ *
+ * @return array Массив с описанием различий
+ */
 function buildDiff(object $data1, object $data2): array
 {
-    $keys = array_unique(array_merge(
-        array_keys((array)$data1),
-        array_keys((array)$data2)
-    ));
+    $keys = array_unique(
+        array_merge(
+            array_keys((array)$data1),
+            array_keys((array)$data2)
+        )
+    );
     sort($keys);
 
-    return array_map(function ($key) use ($data1, $data2) {
-        return buildNode($key, $data1, $data2);
-    }, $keys);
+    return array_map(
+        function ($key) use ($data1, $data2) {
+            return buildNode($key, $data1, $data2);
+        },
+        $keys
+    );
 }
 
+/**
+ * Строит узел различий для конкретного ключа
+ *
+ * @param string $key Ключ для сравнения
+ * @param object $data1 Первый объект
+ * @param object $data2 Второй объект
+ *
+ * @return array Описание различия для ключа
+ */
 function buildNode(string $key, object $data1, object $data2): array
 {
     $value1 = $data1->$key ?? null;
@@ -107,16 +152,38 @@ function buildNode(string $key, object $data1, object $data2): array
     ];
 }
 
+/**
+ * Проверяет, является ли значение объектом (исключая DateTime)
+ *
+ * @param mixed $value Проверяемое значение
+ *
+ * @return bool True если это объект (не DateTime), иначе false
+ */
 function isObject(mixed $value): bool
 {
     return is_object($value) && !($value instanceof \DateTime);
 }
 
+/**
+ * Подготавливает значение для вывода
+ *
+ * @param mixed $value Значение для подготовки
+ *
+ * @return mixed Подготовленное значение
+ */
 function prepareValue(mixed $value): mixed
 {
     return is_object($value) ? (array)$value : $value;
 }
 
+/**
+ * Форматирует различия в указанный формат
+ *
+ * @param array $diff Массив различий
+ * @param string $format Формат вывода (stylish, plain, json)
+ *
+ * @return string Отформатированные различия
+ */
 function formatDiff(array $diff, string $format): string
 {
     switch ($format) {

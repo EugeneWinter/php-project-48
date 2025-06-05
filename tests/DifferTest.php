@@ -1,12 +1,22 @@
 <?php
 
+/**
+ * Тесты для генератора различий между файлами
+ */
+
 namespace DiffGenerator\Tests;
 
 use function DiffGenerator\genDiff;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Класс для тестирования генератора различий
+ */
 class DifferTest extends TestCase
 {
+    /**
+     * Тест для плоских JSON файлов
+     */
     public function testFlatJsonDiff(): void
     {
         $expected = <<<TEXT
@@ -27,6 +37,9 @@ TEXT;
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тест для плоских YAML файлов
+     */
     public function testFlatYamlDiff(): void
     {
         $expected = <<<TEXT
@@ -47,6 +60,9 @@ TEXT;
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тест для вложенных JSON файлов
+     */
     public function testNestedJsonDiff(): void
     {
         $expected = <<<TEXT
@@ -80,6 +96,9 @@ TEXT;
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тест для вложенных YAML файлов
+     */
     public function testNestedYamlDiff(): void
     {
         $expected = <<<TEXT
@@ -113,6 +132,9 @@ TEXT;
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тест для plain формата вывода
+     */
     public function testPlainFormat(): void
     {
         $expected = implode("\n", [
@@ -134,6 +156,9 @@ TEXT;
         $this->assertEquals($expected, $actual);
     }
 
+    /**
+     * Тест для JSON формата вывода
+     */
     public function testJsonFormat(): void
     {
         $actual = genDiff(
@@ -148,12 +173,18 @@ TEXT;
         $this->assertEquals(20, $decoded['timeout']['newValue']);
     }
 
+    /**
+     * Тест для случая, когда файл не найден
+     */
     public function testFileNotFound(): void
     {
         $this->expectException(\RuntimeException::class);
         genDiff('nonexistent.json', __DIR__ . '/fixtures/file1.json');
     }
 
+    /**
+     * Тест для случая разных форматов файлов
+     */
     public function testDifferentFormats(): void
     {
         $this->expectException(\RuntimeException::class);
