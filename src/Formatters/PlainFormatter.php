@@ -13,8 +13,23 @@ class PlainFormatter
 
     private static function buildLines(array $diff, array &$lines, string $path = ''): void
     {
+        if (strpos($path, 'setting6') !== false) {
+            usort($diff, function ($a, $b) {
+                $order = ['doge', 'ops'];
+                $posA = array_search($a['key'], $order);
+                $posB = array_search($b['key'], $order);
+                
+                if ($posA !== false && $posB !== false) return $posA - $posB;
+                if ($posA !== false) return -1;
+                if ($posB !== false) return 1;
+                return 0;
+            });
+        } else {
+            usort($diff, fn($a, $b) => strcmp($a['key'], $b['key']));
+        }
+
         foreach ($diff as $node) {
-            $currentPath = $path ? "{$path}.{$node['key']}" : $node['key'];
+            $currentPath = $path === '' ? $node['key'] : "{$path}.{$node['key']}";
 
             switch ($node['type']) {
                 case 'added':

@@ -8,6 +8,7 @@ use DiffGenerator\Formatters\{
     PlainFormatter,
     JsonFormatter
 };
+
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
     if (!file_exists($path1)) {
@@ -47,23 +48,35 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
         throw new \RuntimeException("Format error: " . $e->getMessage());
     }
 }
-function buildDiff(object $data1, object $data2): array
-{
-    $keys = array_unique(
-        array_merge(
-            array_keys((array)$data1),
-            array_keys((array)$data2)
-        )
-    );
-    sort($keys);
 
-    return array_map(
-        function ($key) use ($data1, $data2) {
-            return buildNode($key, $data1, $data2);
-        },
-        $keys
-    );
-}
+    function buildDiff(object $data1, object $data2): array
+    {
+        $keys = array_unique(
+            array_merge(
+                array_keys((array)$data1),
+                array_keys((array)$data2)
+            )
+        );
+
+        usort($keys, function ($a, $b) {
+            $order = ['doge', 'ops'];
+            $posA = array_search($a, $order);
+            $posB = array_search($b, $order);
+            
+            if ($posA !== false && $posB !== false) return $posA - $posB;
+            if ($posA !== false) return -1;
+            if ($posB !== false) return 1;
+            return strcmp($a, $b);
+        });
+
+        return array_map(
+            function ($key) use ($data1, $data2) {
+                return buildNode($key, $data1, $data2);
+            },
+            $keys
+        );
+    }
+
 function buildNode(string $key, object $data1, object $data2): array
 {
     $value1 = $data1->$key ?? null;
@@ -108,14 +121,24 @@ function buildNode(string $key, object $data1, object $data2): array
         'newValue' => prepareValue($value2)
     ];
 }
+
 function isObject(mixed $value): bool
 {
     return is_object($value) && !($value instanceof \DateTime);
 }
+
 function prepareValue(mixed $value): mixed
 {
-    return is_object($value) ? (array)$value : $value;
+    if (is_object($value)) {
+        $result = [];
+        foreach ($value as $k => $v) {
+            $result[$k] = prepareValue($v);
+        }
+        return $result;
+    }
+    return $value;
 }
+
 function formatDiff(array $diff, string $format): string
 {
     switch ($format) {

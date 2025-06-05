@@ -494,9 +494,9 @@
             'dev_requirement' => true,
         ),
         'symfony/yaml' => array(
-            'pretty_version' => 'v7.3.0',
-            'version' => '7.3.0.0',
-            'reference' => 'cea40a48279d58dc3efee8112634cb90141156c2',
+            'pretty_version' => 'v6.4.21',
+            'version' => '6.4.21.0',
+            'reference' => 'f01987f45676778b474468aa266fe2eda1f2bc7e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/yaml',
             'aliases' => array(),
