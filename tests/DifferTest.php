@@ -3,7 +3,6 @@
 namespace DiffGenerator\Tests;
 
 use function DiffGenerator\genDiff;
-
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -219,7 +218,7 @@ TEXT;
     public function testDifferentFormats(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessageMatches('/Different file formats/');
+        $this->expectExceptionMessage('Different file formats: json and yaml');
 
         genDiff(
             __DIR__ . '/fixtures/file1.json',

@@ -30,10 +30,11 @@ class YamlParser implements ParserInterface
     public static function parse(string $content): object
     {
         try {
-            return Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
+            $result = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
+            return $result ?? new \stdClass(); // Всегда возвращаем объект
         } catch (Exception $e) {
             throw new Exception(
-                sprintf('Ошибка парсинга YAML: %s', $e->getMessage())
+                sprintf('YAML parse error: %s', $e->getMessage())
             );
         }
     }

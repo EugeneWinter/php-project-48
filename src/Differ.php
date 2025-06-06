@@ -30,7 +30,7 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
     $content2 = file_get_contents($path2);
 
     if ($content1 === false || $content2 === false) {
-        throw new RuntimeException('Не удалось прочитать содержимое файла');
+        throw new RuntimeException('Failed to read file contents');
     }
 
     try {
@@ -39,7 +39,7 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
 
         if ($format1 !== $format2) {
             throw new RuntimeException(
-                sprintf('Разные форматы файлов: %s и %s', $format1, $format2)
+                sprintf('Different file formats: %s and %s', $format1, $format2)
             );
         }
 
@@ -47,7 +47,7 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
         $data2 = ParserFactory::parse($content2, $format2);
     } catch (Exception $e) {
         throw new RuntimeException(
-            sprintf('Ошибка парсинга: %s', $e->getMessage())
+            sprintf('Parse error: %s', $e->getMessage())
         );
     }
 
@@ -57,7 +57,7 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
         return formatDiff($diff, $format);
     } catch (Exception $e) {
         throw new RuntimeException(
-            sprintf('Ошибка форматирования: %s', $e->getMessage())
+            sprintf('Format error: %s', $e->getMessage())
         );
     }
 }
@@ -74,13 +74,13 @@ function validateFiles(string $path1, string $path2): void
 {
     if (!file_exists($path1)) {
         throw new RuntimeException(
-            sprintf('Файл не найден: %s', $path1)
+            sprintf('File not found: %s', $path1)
         );
     }
 
     if (!file_exists($path2)) {
         throw new RuntimeException(
-            sprintf('Файл не найден: %s', $path2)
+            sprintf('File not found: %s', $path2)
         );
     }
 }
@@ -102,7 +102,16 @@ function buildDiff(object $data1, object $data2): array
         )
     );
 
-    usort($keys, 'sortKeys');
+    usort($keys, function ($a, $b) {
+        $order = ['doge', 'ops'];
+        $posA = array_search($a, $order);
+        $posB = array_search($b, $order);
+
+        if ($posA !== false && $posB !== false) return $posA - $posB;
+        if ($posA !== false) return -1;
+        if ($posB !== false) return 1;
+        return strcmp($a, $b);
+    });
 
     return array_map(
         function ($key) use ($data1, $data2) {
@@ -110,32 +119,6 @@ function buildDiff(object $data1, object $data2): array
         },
         $keys
     );
-}
-
-/**
- * Сортирует ключи по специальному порядку
- *
- * @param string $a Первый ключ
- * @param string $b Второй ключ
- *
- * @return int Результат сравнения
- */
-function sortKeys(string $a, string $b): int
-{
-    $order = ['doge', 'ops'];
-    $posA = array_search($a, $order);
-    $posB = array_search($b, $order);
-
-    if ($posA !== false && $posB !== false) {
-        return $posA - $posB;
-    }
-    if ($posA !== false) {
-        return -1;
-    }
-    if ($posB !== false) {
-        return 1;
-    }
-    return strcmp($a, $b);
 }
 
 /**
