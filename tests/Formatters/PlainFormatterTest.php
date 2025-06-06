@@ -1,65 +1,77 @@
 <?php
 
-namespace DiffGenerator\Formatters;
+namespace DiffGenerator\Tests\Formatters;
 
-class PlainFormatter
+use DiffGenerator\Formatters\PlainFormatter;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Тесты для PlainFormatter
+ *
+ * @category DiffGenerator
+ * @package  Tests\Formatters
+ * @author   Eugene Winter <corvoattano200529@gmail.com>
+ * @license  MIT https://opensource.org/licenses/MIT
+ * @link     https://github.com/EugeneWinter/php-project-48
+ */
+class PlainFormatterTest extends TestCase
 {
-    public static function format(array $diff): string
+    /**
+     * Тестирование форматирования различий
+     *
+     * @return void
+     */
+    public function testFormat(): void
     {
-        $lines = [];
-        self::buildLines($diff, $lines);
-        return implode("\n", $lines);
-    }
+        $diff = [
+            [
+                'type' => 'added',
+                'key' => 'verbose',
+                'value' => true
+            ],
+            [
+                'type' => 'removed',
+                'key' => 'proxy',
+                'value' => '123.234.53.22'
+            ],
+            [
+                'type' => 'changed',
+                'key' => 'timeout',
+                'oldValue' => 50,
+                'newValue' => 20
+            ],
+            [
+                'type' => 'nested',
+                'key' => 'settings',
+                'children' => [
+                    [
+                        'type' => 'added',
+                        'key' => 'log',
+                        'value' => ['file' => 'app.log']
+                    ]
+                ]
+            ]
+        ];
 
-    private static function buildLines(array $diff, array &$lines, string $path = ''): void
-    {
-        foreach ($diff as $node) {
-            $currentPath = $path === '' ? $node['key'] : "{$path}.{$node['key']}";
+        $result = PlainFormatter::format($diff);
+        $lines = explode("\n", $result);
 
-            switch ($node['type']) {
-                case 'added':
-                    $value = self::stringifyValue($node['value']);
-                    $lines[] = "Property '{$currentPath}' was added with value: {$value}";
-                    break;
-
-                case 'removed':
-                    $lines[] = "Property '{$currentPath}' was removed";
-                    break;
-
-                case 'changed':
-                    $oldValue = self::stringifyValue($node['oldValue']);
-                    $newValue = self::stringifyValue($node['newValue']);
-                    $lines[] = "Property '{$currentPath}' was updated. From {$oldValue} to {$newValue}";
-                    break;
-
-                case 'nested':
-                    self::buildLines($node['children'], $lines, $currentPath);
-                    break;
-
-                case 'unchanged':
-                    break;
-            }
-        }
-    }
-
-    private static function stringifyValue($value): string
-    {
-        if (is_object($value) || is_array($value)) {
-            return '[complex value]';
-        }
-
-        if (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        }
-
-        if ($value === null) {
-            return 'null';
-        }
-
-        if (is_string($value)) {
-            return "'" . str_replace("'", "\'", $value) . "'";
-        }
-
-        return (string) $value;
+        $this->assertCount(4, $lines);
+        $this->assertStringContainsString(
+            "Property 'verbose' was added with value: true",
+            $result
+        );
+        $this->assertStringContainsString(
+            "Property 'proxy' was removed",
+            $result
+        );
+        $this->assertStringContainsString(
+            "Property 'timeout' was updated. From 50 to 20",
+            $result
+        );
+        $this->assertStringContainsString(
+            "Property 'settings.log' was added with value: [complex value]",
+            $result
+        );
     }
 }

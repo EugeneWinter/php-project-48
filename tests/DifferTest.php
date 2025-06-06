@@ -3,10 +3,28 @@
 namespace DiffGenerator\Tests;
 
 use function DiffGenerator\genDiff;
-use PHPUnit\Framework\TestCase;
 
+use PHPUnit\Framework\TestCase;
+use RuntimeException;
+
+/**
+ * Тесты для функции genDiff
+ *
+ * Проверяет корректность сравнения файлов разных форматов
+ *
+ * @category DiffGenerator
+ * @package  Tests
+ * @author   Eugene Winter <corvoattano200529@gmail.com>
+ * @license  MIT https://opensource.org/licenses/MIT
+ * @link     https://github.com/EugeneWinter/php-project-48
+ */
 class DifferTest extends TestCase
 {
+    /**
+     * Тестирует сравнение плоских JSON файлов
+     *
+     * @return void
+     */
     public function testFlatJsonDiff(): void
     {
         $expected = <<<TEXT
@@ -24,9 +42,15 @@ TEXT;
             __DIR__ . '/fixtures/file1.json',
             __DIR__ . '/fixtures/file2.json'
         );
+
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тестирует сравнение плоских YAML файлов
+     *
+     * @return void
+     */
     public function testFlatYamlDiff(): void
     {
         $expected = <<<TEXT
@@ -44,9 +68,15 @@ TEXT;
             __DIR__ . '/fixtures/file1.yaml',
             __DIR__ . '/fixtures/file2.yaml'
         );
+
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тестирует сравнение вложенных JSON структур
+     *
+     * @return void
+     */
     public function testNestedJsonDiff(): void
     {
         $expected = <<<TEXT
@@ -77,9 +107,15 @@ TEXT;
             __DIR__ . '/fixtures/nested1.json',
             __DIR__ . '/fixtures/nested2.json'
         );
+
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тестирует сравнение вложенных YAML структур
+     *
+     * @return void
+     */
     public function testNestedYamlDiff(): void
     {
         $expected = <<<TEXT
@@ -110,9 +146,15 @@ TEXT;
             __DIR__ . '/fixtures/nested1.yaml',
             __DIR__ . '/fixtures/nested2.yaml'
         );
+
         $this->assertEquals(trim($expected), trim($actual));
     }
 
+    /**
+     * Тестирует вывод в формате 'plain'
+     *
+     * @return void
+     */
     public function testPlainFormat(): void
     {
         $expected = implode("\n", [
@@ -130,10 +172,15 @@ TEXT;
             __DIR__ . '/fixtures/nested2.json',
             'plain'
         );
-        
+
         $this->assertEquals($expected, $actual);
     }
 
+    /**
+     * Тестирует вывод в формате 'json'
+     *
+     * @return void
+     */
     public function testJsonFormat(): void
     {
         $actual = genDiff(
@@ -141,22 +188,39 @@ TEXT;
             __DIR__ . '/fixtures/file2.json',
             'json'
         );
+
         $this->assertJson($actual);
+
         $decoded = json_decode($actual, true);
+        $this->assertIsArray($decoded);
         $this->assertArrayHasKey('timeout', $decoded);
         $this->assertEquals(50, $decoded['timeout']['oldValue']);
         $this->assertEquals(20, $decoded['timeout']['newValue']);
     }
 
+    /**
+     * Тестирует обработку отсутствующего файла
+     *
+     * @return void
+     */
     public function testFileNotFound(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('File not found: nonexistent.json');
+
         genDiff('nonexistent.json', __DIR__ . '/fixtures/file1.json');
     }
 
+    /**
+     * Тестирует обработку разных форматов файлов
+     *
+     * @return void
+     */
     public function testDifferentFormats(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessageMatches('/Different file formats/');
+
         genDiff(
             __DIR__ . '/fixtures/file1.json',
             __DIR__ . '/fixtures/file1.yaml'

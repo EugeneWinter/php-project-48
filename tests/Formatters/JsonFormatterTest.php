@@ -5,8 +5,24 @@ namespace DiffGenerator\Tests\Formatters;
 use DiffGenerator\Formatters\JsonFormatter;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Тесты для JsonFormatter
+ *
+ * Проверяет корректность форматирования различий в JSON-формат
+ *
+ * @category DiffGenerator
+ * @package  Tests\Formatters
+ * @author   Eugene Winter <corvoattano200529@gmail.com>
+ * @license  MIT https://opensource.org/licenses/MIT
+ * @link     https://github.com/EugeneWinter/php-project-48
+ */
 class JsonFormatterTest extends TestCase
 {
+    /**
+     * Тестирует форматирование различий в JSON
+     *
+     * @return void
+     */
     public function testFormat(): void
     {
         $diff = [
@@ -14,7 +30,7 @@ class JsonFormatterTest extends TestCase
                 'type' => 'changed',
                 'key' => 'timeout',
                 'oldValue' => 50,
-                'newValue' => 20
+                'newValue' => 20,
             ],
             [
                 'type' => 'nested',
@@ -23,13 +39,13 @@ class JsonFormatterTest extends TestCase
                     [
                         'type' => 'added',
                         'key' => 'log',
-                        'value' => true
-                    ]
-                ]
-            ]
+                        'value' => true,
+                    ],
+                ],
+            ],
         ];
 
-        $expected = <<<JSON
+        $expected = <<<'JSON'
 {
     "timeout": {
         "type": "changed",
@@ -45,9 +61,30 @@ class JsonFormatterTest extends TestCase
 }
 JSON;
 
-        $this->assertJsonStringEqualsJsonString(
-            $expected,
-            JsonFormatter::format($diff)
-        );
+        $actual = JsonFormatter::format($diff);
+
+        $this->assertJsonStringEqualsJsonString($expected, $actual);
+        $this->assertJson($actual);
+    }
+
+    /**
+     * Проверяет красивое форматирование JSON (с отступами)
+     *
+     * @return void
+     */
+    public function testFormatIsPrettyPrinted(): void
+    {
+        $diff = [
+            [
+                'type' => 'unchanged',
+                'key' => 'simple',
+                'value' => 'value',
+            ],
+        ];
+
+        $result = JsonFormatter::format($diff);
+
+        $this->assertStringContainsString("\n", $result);
+        $this->assertStringContainsString("    ", $result);
     }
 }

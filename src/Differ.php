@@ -8,75 +8,145 @@ use DiffGenerator\Formatters\{
     PlainFormatter,
     JsonFormatter
 };
+use RuntimeException;
+use Exception;
 
+/**
+ * Генерирует различия между двумя файлами
+ *
+ * @param string $path1   Путь к первому файлу
+ * @param string $path2   Путь ко второму файлу
+ * @param string $format  Формат вывода (stylish, plain, json)
+ *
+ * @return string Отформатированные различия
+ *
+ * @throws RuntimeException Если файлы не могут быть прочитаны или распаршены
+ */
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
-    if (!file_exists($path1)) {
-        throw new \RuntimeException("File not found: {$path1}");
-    }
-
-    if (!file_exists($path2)) {
-        throw new \RuntimeException("File not found: {$path2}");
-    }
+    validateFiles($path1, $path2);
 
     $content1 = file_get_contents($path1);
     $content2 = file_get_contents($path2);
 
     if ($content1 === false || $content2 === false) {
-        throw new \RuntimeException("Failed to read file contents");
+        throw new RuntimeException('Не удалось прочитать содержимое файла');
     }
 
     try {
         $format1 = ParserFactory::getFormat($path1);
         $format2 = ParserFactory::getFormat($path2);
-        
+
         if ($format1 !== $format2) {
-            throw new \RuntimeException("Different file formats: {$format1} and {$format2}");
+            throw new RuntimeException(
+                sprintf('Разные форматы файлов: %s и %s', $format1, $format2)
+            );
         }
 
         $data1 = ParserFactory::parse($content1, $format1);
         $data2 = ParserFactory::parse($content2, $format2);
-    } catch (\Exception $e) {
-        throw new \RuntimeException("Parse error: " . $e->getMessage());
+    } catch (Exception $e) {
+        throw new RuntimeException(
+            sprintf('Ошибка парсинга: %s', $e->getMessage())
+        );
     }
 
     $diff = buildDiff($data1, $data2);
 
     try {
         return formatDiff($diff, $format);
-    } catch (\Exception $e) {
-        throw new \RuntimeException("Format error: " . $e->getMessage());
+    } catch (Exception $e) {
+        throw new RuntimeException(
+            sprintf('Ошибка форматирования: %s', $e->getMessage())
+        );
     }
 }
 
-    function buildDiff(object $data1, object $data2): array
-    {
-        $keys = array_unique(
-            array_merge(
-                array_keys((array)$data1),
-                array_keys((array)$data2)
-            )
-        );
-
-        usort($keys, function ($a, $b) {
-            $order = ['doge', 'ops'];
-            $posA = array_search($a, $order);
-            $posB = array_search($b, $order);
-            
-            if ($posA !== false && $posB !== false) return $posA - $posB;
-            if ($posA !== false) return -1;
-            if ($posB !== false) return 1;
-            return strcmp($a, $b);
-        });
-
-        return array_map(
-            function ($key) use ($data1, $data2) {
-                return buildNode($key, $data1, $data2);
-            },
-            $keys
+/**
+ * Проверяет существование файлов
+ *
+ * @param string $path1 Путь к первому файлу
+ * @param string $path2 Путь ко второму файлу
+ *
+ * @throws RuntimeException Если файл не найден
+ */
+function validateFiles(string $path1, string $path2): void
+{
+    if (!file_exists($path1)) {
+        throw new RuntimeException(
+            sprintf('Файл не найден: %s', $path1)
         );
     }
 
+    if (!file_exists($path2)) {
+        throw new RuntimeException(
+            sprintf('Файл не найден: %s', $path2)
+        );
+    }
+}
+
+/**
+ * Строит дерево различий между двумя объектами данных
+ *
+ * @param object $data1 Первый объект данных
+ * @param object $data2 Второй объект данных
+ *
+ * @return array Дерево различий
+ */
+function buildDiff(object $data1, object $data2): array
+{
+    $keys = array_unique(
+        array_merge(
+            array_keys((array)$data1),
+            array_keys((array)$data2)
+        )
+    );
+
+    usort($keys, 'sortKeys');
+
+    return array_map(
+        function ($key) use ($data1, $data2) {
+            return buildNode($key, $data1, $data2);
+        },
+        $keys
+    );
+}
+
+/**
+ * Сортирует ключи по специальному порядку
+ *
+ * @param string $a Первый ключ
+ * @param string $b Второй ключ
+ *
+ * @return int Результат сравнения
+ */
+function sortKeys(string $a, string $b): int
+{
+    $order = ['doge', 'ops'];
+    $posA = array_search($a, $order);
+    $posB = array_search($b, $order);
+
+    if ($posA !== false && $posB !== false) {
+        return $posA - $posB;
+    }
+    if ($posA !== false) {
+        return -1;
+    }
+    if ($posB !== false) {
+        return 1;
+    }
+    return strcmp($a, $b);
+}
+
+/**
+ * Строит узел различий
+ *
+ * @param string $key   Ключ узла
+ * @param object $data1 Первый объект данных
+ * @param object $data2 Второй объект данных
+ *
+ * @return array Узел различий
+ */
 function buildNode(string $key, object $data1, object $data2): array
 {
     $value1 = $data1->$key ?? null;
@@ -122,11 +192,25 @@ function buildNode(string $key, object $data1, object $data2): array
     ];
 }
 
+/**
+ * Проверяет, является ли значение объектом (исключая DateTime)
+ *
+ * @param mixed $value Проверяемое значение
+ *
+ * @return bool True если это объект
+ */
 function isObject(mixed $value): bool
 {
     return is_object($value) && !($value instanceof \DateTime);
 }
 
+/**
+ * Подготавливает значение для сравнения
+ *
+ * @param mixed $value Значение для подготовки
+ *
+ * @return mixed Подготовленное значение
+ */
 function prepareValue(mixed $value): mixed
 {
     if (is_object($value)) {
@@ -139,6 +223,14 @@ function prepareValue(mixed $value): mixed
     return $value;
 }
 
+/**
+ * Форматирует дерево различий
+ *
+ * @param array  $diff   Дерево различий
+ * @param string $format Формат вывода
+ *
+ * @return string Отформатированные различия
+ */
 function formatDiff(array $diff, string $format): string
 {
     switch ($format) {
