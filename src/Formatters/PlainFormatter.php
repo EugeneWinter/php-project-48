@@ -13,20 +13,16 @@ class PlainFormatter
 
     private static function buildLines(array $diff, array &$lines, string $path = ''): void
     {
-        if (strpos($path, 'setting6') !== false) {
-            usort($diff, function ($a, $b) {
-                $order = ['doge', 'ops'];
-                $posA = array_search($a['key'], $order);
-                $posB = array_search($b['key'], $order);
-                
-                if ($posA !== false && $posB !== false) return $posA - $posB;
-                if ($posA !== false) return -1;
-                if ($posB !== false) return 1;
-                return 0;
-            });
-        } else {
-            usort($diff, fn($a, $b) => strcmp($a['key'], $b['key']));
-        }
+        usort($diff, function ($a, $b) {
+            $order = ['doge', 'ops'];
+            $posA = array_search($a['key'], $order);
+            $posB = array_search($b['key'], $order);
+            
+            if ($posA !== false && $posB !== false) return $posA - $posB;
+            if ($posA !== false) return -1;
+            if ($posB !== false) return 1;
+            return strcmp($a['key'], $b['key']);
+        });
 
         foreach ($diff as $node) {
             $currentPath = $path === '' ? $node['key'] : "{$path}.{$node['key']}";
@@ -50,6 +46,9 @@ class PlainFormatter
                 case 'nested':
                     self::buildLines($node['children'], $lines, $currentPath);
                     break;
+
+                case 'unchanged':
+                    break;
             }
         }
     }
@@ -64,14 +63,14 @@ class PlainFormatter
             return $value ? 'true' : 'false';
         }
 
-        if (is_null($value)) {
+        if ($value === null) {
             return 'null';
         }
 
         if (is_string($value)) {
-            return "'{$value}'";
+            return "'" . str_replace("'", "\'", $value) . "'";
         }
 
-        return (string)$value;
+        return (string) $value;
     }
 }
