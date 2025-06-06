@@ -30,7 +30,7 @@ class JsonParser implements ParserInterface
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception(
-                sprintf('Ошибка парсинга JSON: %s', json_last_error_msg())
+                sprintf('JSON parse error: %s', json_last_error_msg())
             );
         }
 

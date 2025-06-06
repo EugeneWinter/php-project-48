@@ -9,8 +9,8 @@ use Exception;
  *
  * Определяет подходящий парсер и преобразует содержимое файла в объект PHP
  *
- * @category DiffGenerator  # Категория (оставлено по стандарту)
- * @package  Parsers       # Пакет (оставлено по стандарту)
+ * @category DiffGenerator
+ * @package  Parsers
  * @author   Eugene Winter <corvoattano200529@gmail.com>
  * @license  MIT https://opensource.org/licenses/MIT
  * @link     https://github.com/EugeneWinter/php-project-48
@@ -40,7 +40,7 @@ class ParserFactory
             'json' => 'json',
             'yml', 'yaml' => 'yaml',
             default => throw new Exception(
-                sprintf('Неподдерживаемое расширение файла: %s', $extension)
+                sprintf('Unsupported file extension: %s', $extension)
             ),
         };
     }
@@ -64,7 +64,7 @@ class ParserFactory
         }
 
         throw new Exception(
-            sprintf('Неподдерживаемый формат: %s', $format)
+            sprintf('Unsupported format: %s', $format)
         );
     }
 }
