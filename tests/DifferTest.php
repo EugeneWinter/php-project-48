@@ -3,6 +3,7 @@
 namespace DiffGenerator\Tests;
 
 use function DiffGenerator\genDiff;
+
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

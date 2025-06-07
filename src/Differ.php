@@ -107,9 +107,15 @@ function buildDiff(object $data1, object $data2): array
         $posA = array_search($a, $order);
         $posB = array_search($b, $order);
 
-        if ($posA !== false && $posB !== false) return $posA - $posB;
-        if ($posA !== false) return -1;
-        if ($posB !== false) return 1;
+        if ($posA !== false && $posB !== false) {
+            return $posA - $posB;
+        }
+        if ($posA !== false) {
+            return -1;
+        }
+        if ($posB !== false) {
+            return 1;
+        }
         return strcmp($a, $b);
     });
 

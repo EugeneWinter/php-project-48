@@ -34,7 +34,7 @@ class YamlParserTest extends TestCase
         YAML;
 
         $result = YamlParser::parse($yaml);
-        
+
         $this->assertIsObject($result);
         $this->assertEquals('value', $result->key);
         $this->assertEquals('value1', $result->nested->item1);
@@ -50,7 +50,7 @@ class YamlParserTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('YAML parse error');
-        
+
         YamlParser::parse("key: [value");
     }
 
