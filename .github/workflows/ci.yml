@@ -2,19 +2,15 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test:
+  test-and-sonar:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php: ['8.2']
-    name: PHP ${{ matrix.php }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: '8.2'
           coverage: pcov
           tools: composer:v2
 
@@ -22,12 +18,15 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Run tests with coverage
-        run: vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-
-      - name: Send to SonarCloud
-        if: github.ref == 'refs/heads/main'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          composer require sonar-tools/php-scanner --dev
-          vendor/bin/sonar-scanner
+          mkdir -p build/logs
+          vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+
+      - name: Run Linter
+        run: vendor/bin/phpcs --standard=PSR12 src tests bin/gendiff
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
