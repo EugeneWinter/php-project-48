@@ -1,18 +1,18 @@
 <?php
 
-namespace DiffGenerator\Tests;
+namespace Differ\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function DiffGenerator\genDiff;
+use function Differ\genDiff;
 
 /**
  * Тесты для функции genDiff
  *
  * Проверяет корректность сравнения файлов разных форматов
  *
- * @category DiffGenerator
+ * @category Differ
  * @package  Tests
  * @author   Eugene Winter <corvoattano200529@gmail.com>
  * @license  MIT https://opensource.org/licenses/MIT
