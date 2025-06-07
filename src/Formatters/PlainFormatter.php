@@ -35,7 +35,7 @@ class PlainFormatter
     public static function format(array $diff): string
     {
         $lines = [];
-        self::_buildLines($diff, $lines);
+        self::buildLines($diff, $lines);
         return implode("\n", $lines);
     }
 
@@ -48,7 +48,7 @@ class PlainFormatter
      *
      * @return void
      */
-    private static function _buildLines(array $diff, array &$lines, string $path = ''): void
+    private static function buildLines(array $diff, array &$lines, string $path = ''): void
     {
         usort(
             $diff,
@@ -75,7 +75,7 @@ class PlainFormatter
 
             switch ($node['type']) {
                 case 'added':
-                    $value = self::_stringifyValue($node['value']);
+                    $value = self::stringifyValue($node['value']);
                     $lines[] = sprintf(
                         "Property '%s' was added with value: %s",
                         $currentPath,
@@ -91,8 +91,8 @@ class PlainFormatter
                     break;
 
                 case 'changed':
-                    $oldValue = self::_stringifyValue($node['oldValue']);
-                    $newValue = self::_stringifyValue($node['newValue']);
+                    $oldValue = self::stringifyValue($node['oldValue']);
+                    $newValue = self::stringifyValue($node['newValue']);
                     $lines[] = sprintf(
                         "Property '%s' was updated. From %s to %s",
                         $currentPath,
@@ -102,7 +102,7 @@ class PlainFormatter
                     break;
 
                 case 'nested':
-                    self::_buildLines($node['children'], $lines, $currentPath);
+                    self::buildLines($node['children'], $lines, $currentPath);
                     break;
 
                 case 'unchanged':
@@ -118,7 +118,7 @@ class PlainFormatter
      *
      * @return string Строковое представление значения
      */
-    private static function _stringifyValue($value): string
+    private static function stringifyValue($value): string
     {
         if (is_object($value) || is_array($value)) {
             return '[complex value]';

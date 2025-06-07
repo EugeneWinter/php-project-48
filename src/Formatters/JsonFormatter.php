@@ -32,7 +32,7 @@ class JsonFormatter
      */
     public static function format(array $diff): string
     {
-        $result = self::_convertToStructured($diff);
+        $result = self::convertToStructured($diff);
         return json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 
@@ -43,7 +43,7 @@ class JsonFormatter
      *
      * @return array Структурированный массив для преобразования в JSON
      */
-    private static function _convertToStructured(array $diff): array
+    private static function convertToStructured(array $diff): array
     {
         $result = [];
 
@@ -55,31 +55,31 @@ class JsonFormatter
                 case 'added':
                     $result[$key] = [
                         'type' => 'added',
-                        'value' => self::_prepareValue($node['value'])
+                        'value' => self::prepareValue($node['value'])
                     ];
                     break;
 
                 case 'removed':
                     $result[$key] = [
                         'type' => 'removed',
-                        'value' => self::_prepareValue($node['value'])
+                        'value' => self::prepareValue($node['value'])
                     ];
                     break;
 
                 case 'changed':
                     $result[$key] = [
                         'type' => 'changed',
-                        'oldValue' => self::_prepareValue($node['oldValue']),
-                        'newValue' => self::_prepareValue($node['newValue'])
+                        'oldValue' => self::prepareValue($node['oldValue']),
+                        'newValue' => self::prepareValue($node['newValue'])
                     ];
                     break;
 
                 case 'nested':
-                    $result[$key] = self::_convertToStructured($node['children']);
+                    $result[$key] = self::convertToStructured($node['children']);
                     break;
 
                 default:
-                    $result[$key] = self::_prepareValue($node['value']);
+                    $result[$key] = self::prepareValue($node['value']);
             }
         }
 
@@ -93,12 +93,12 @@ class JsonFormatter
      *
      * @return mixed Подготовленное значение
      */
-    private static function _prepareValue($value)
+    private static function prepareValue($value)
     {
         if (is_object($value)) {
             $result = [];
             foreach ($value as $k => $v) {
-                $result[$k] = self::_prepareValue($v);
+                $result[$k] = self::prepareValue($v);
             }
             return $result;
         }

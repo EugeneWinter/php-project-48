@@ -2,10 +2,10 @@
 
 namespace DiffGenerator\Tests;
 
-use function DiffGenerator\genDiff;
-
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+
+use function DiffGenerator\genDiff;
 
 /**
  * Тесты для функции genDiff
