@@ -5,7 +5,7 @@ namespace Differ\Tests;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Differ\genDiff;
+use function DiffGenerator\genDiff;
 
 /**
  * Тесты для функции genDiff
