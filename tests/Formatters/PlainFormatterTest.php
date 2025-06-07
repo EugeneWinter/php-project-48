@@ -32,7 +32,7 @@ class PlainFormatterTest extends TestCase
             [
                 'type' => 'removed',
                 'key' => 'proxy',
-                'value' => '123.234.53.22'
+                'value' => env('PROXY_IP')
             ],
             [
                 'type' => 'changed',
