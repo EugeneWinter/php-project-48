@@ -88,23 +88,8 @@ function buildDiff(object $data1, object $data2): array
         array_keys((array)$data2)
     ));
 
-    usort($keys, function ($a, $b) {
-        $order = ['doge', 'ops'];
-        $posA = array_search($a, $order);
-        $posB = array_search($b, $order);
-
-        if ($posA !== false && $posB !== false) {
-            return $posA - $posB;
-        }
-        if ($posA !== false) {
-            return -1;
-        }
-        if ($posB !== false) {
-            return 1;
-        }
-        return strcmp($a, $b);
-    });
-
+    sort($keys);
+    
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
         $keys
