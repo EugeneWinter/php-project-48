@@ -68,8 +68,6 @@ function buildDiff(object $data1, object $data2): array
         array_keys((array)$data1),
         array_keys((array)$data2)
     ));
-
-    sort($keys);
     
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
@@ -134,7 +132,7 @@ function prepareValue(mixed $value): mixed
         foreach ($value as $k => $v) {
             $result[$k] = prepareValue($v);
         }
-        return $result;
+        return (object)$result;
     }
     return $value;
 }
