@@ -170,18 +170,18 @@ function formatNode(array $node, int $indent): string
     $key = $node['key'];
     
     switch ($node['type']) {
+        case 'nested':
+            $children = formatOutput($node['children'], $indent + 4);
+            return "{$spaces}  {$key}: " . ltrim($children);
+        case 'unchanged':
+            return "{$spaces}  {$key}: " . formatValue($node['value'], $indent + 4);
         case 'added':
             return "{$spaces}+ {$key}: " . formatValue($node['value'], $indent + 4);
         case 'removed':
             return "{$spaces}- {$key}: " . formatValue($node['value'], $indent + 4);
-        case 'unchanged':
-            return "{$spaces}  {$key}: " . formatValue($node['value'], $indent + 4);
         case 'changed':
             return "{$spaces}- {$key}: " . formatValue($node['oldValue'], $indent + 4) . 
                    "\n{$spaces}+ {$key}: " . formatValue($node['newValue'], $indent + 4);
-        case 'nested':
-            $children = formatOutput($node['children'], $indent + 4);
-            return "{$spaces}  {$key}: " . ltrim($children);
         default:
             throw new \RuntimeException("Unknown node type: {$node['type']}");
     }
@@ -198,18 +198,18 @@ function formatValue(mixed $value, int $indent): string
         $lines[] = str_repeat(' ', $indent) . "}";
         return implode("\n", $lines);
     }
-    
+
     if (is_string($value)) {
-        return $value;
+        return $value === '' ? $value : $value;
     }
-    
+
     if (is_bool($value)) {
         return $value ? 'true' : 'false';
     }
-    
+
     if (is_null($value)) {
         return 'null';
     }
-    
+
     return (string)$value;
 }
