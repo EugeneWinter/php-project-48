@@ -1,6 +1,6 @@
 <?php
 
-namespace DiffGenerator\Formatters;
+namespace Differ\Formatters;
 
 /**
  * Форматер для вывода различий в стилизованном формате

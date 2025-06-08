@@ -1,6 +1,6 @@
 <?php
 
-namespace DiffGenerator\Tests\Formatters;
+namespace Differ\Tests\Formatters;
 
 use DiffGenerator\Formatters\PlainFormatter;
 use PHPUnit\Framework\TestCase;

@@ -10,7 +10,7 @@
  * @link     https://github.com/EugeneWinter/php-project-48
  */
 
-namespace DiffGenerator\Formatters;
+namespace Differ\Formatters;
 
 /**
  * Класс для форматирования различий в JSON

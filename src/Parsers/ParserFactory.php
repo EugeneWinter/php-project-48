@@ -1,6 +1,6 @@
 <?php
 
-namespace DiffGenerator\Parsers;
+namespace Differ\Parsers;
 
 use Exception;
 

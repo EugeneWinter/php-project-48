@@ -12,7 +12,7 @@
  * @link     https://github.com/EugeneWinter/php-project-48
  */
 
-namespace DiffGenerator\Formatters;
+namespace Differ\Formatters;
 
 /**
  * Форматер для вывода различий в простом текстовом формате

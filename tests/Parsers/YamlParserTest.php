@@ -1,6 +1,6 @@
 <?php
 
-namespace DiffGenerator\Tests\Parsers;
+namespace Differ\Tests\Parsers;
 
 use DiffGenerator\Parsers\YamlParser;
 use PHPUnit\Framework\TestCase;

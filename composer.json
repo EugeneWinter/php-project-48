@@ -19,7 +19,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Differ\\": "src/"
+            "Differ\\": "src/",
+            "Differ\\Tests\\": "tests/"
         },
         "files": [
             "src/Differ.php"
@@ -27,7 +28,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "DiffGenerator\\Tests\\": "tests/"
+            "Differ\\Tests\\": "tests/"
         }
     },
     "bin": ["bin/gendiff"],

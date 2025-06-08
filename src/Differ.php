@@ -11,7 +11,7 @@ use DiffGenerator\Formatters\{
 use RuntimeException;
 use Exception;
 
-if (!function_exists('DiffGenerator\genDiff')) {
+if (!function_exists('Differ\genDiff')) {
     /**
      * Генерирует различия между двумя файлами
      *

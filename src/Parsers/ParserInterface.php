@@ -1,6 +1,6 @@
 <?php
 
-namespace DiffGenerator\Parsers;
+namespace Differ\Parsers;
 
 /**
  * Интерфейс для парсеров файлов

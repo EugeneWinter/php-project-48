@@ -1,6 +1,6 @@
 <?php
 
-namespace DiffGenerator\Tests\Parsers;
+namespace Differ\Tests\Parsers;
 
 use DiffGenerator\Parsers\ParserFactory;
 use PHPUnit\Framework\TestCase;
