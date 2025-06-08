@@ -2,7 +2,7 @@
 
 namespace Differ\Tests\Parsers;
 
-use DiffGenerator\Parsers\JsonParser;
+use Differ\Parsers\JsonParser;
 use PHPUnit\Framework\TestCase;
 use Exception;
 

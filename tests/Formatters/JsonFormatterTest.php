@@ -2,7 +2,7 @@
 
 namespace Differ\Tests\Formatters;
 
-use DiffGenerator\Formatters\JsonFormatter;
+use Differ\Formatters\JsonFormatter;
 use PHPUnit\Framework\TestCase;
 
 /**

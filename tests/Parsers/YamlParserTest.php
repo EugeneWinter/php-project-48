@@ -2,7 +2,7 @@
 
 namespace Differ\Tests\Parsers;
 
-use DiffGenerator\Parsers\YamlParser;
+use Differ\Parsers\YamlParser;
 use PHPUnit\Framework\TestCase;
 use Exception;
 

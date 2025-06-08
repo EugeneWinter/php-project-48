@@ -1,8 +1,8 @@
 <?php
 
-namespace DiffGenerator;
+namespace Differ;
 
-use DiffGenerator\Formatters\{
+use Differ\Formatters\{
     JsonFormatter,
     PlainFormatter,
     StylishFormatter

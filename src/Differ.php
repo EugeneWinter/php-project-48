@@ -2,8 +2,8 @@
 
 namespace Differ;
 
-use DiffGenerator\Parsers\ParserFactory;
-use DiffGenerator\Formatters\{
+use Differ\Parsers\ParserFactory;
+use Differ\Formatters\{
     StylishFormatter,
     PlainFormatter,
     JsonFormatter

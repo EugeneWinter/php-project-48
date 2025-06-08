@@ -2,7 +2,7 @@
 
 namespace Differ\Tests\Formatters;
 
-use DiffGenerator\Formatters\PlainFormatter;
+use Differ\Formatters\PlainFormatter;
 use PHPUnit\Framework\TestCase;
 
 /**

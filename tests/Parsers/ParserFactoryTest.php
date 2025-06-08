@@ -2,7 +2,7 @@
 
 namespace Differ\Tests\Parsers;
 
-use DiffGenerator\Parsers\ParserFactory;
+use Differ\Parsers\ParserFactory;
 use PHPUnit\Framework\TestCase;
 use Exception;
 
