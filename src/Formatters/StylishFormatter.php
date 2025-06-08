@@ -35,28 +35,34 @@ class StylishFormatter
 
         switch ($type) {
             case 'added':
-                $sign = self::ADDED_SIGN;
-                $value = self::stringify($node['value'], $depth + 1);
-                break;
+                return sprintf(
+                    "%s  %s %s: %s",
+                    $indent,
+                    self::ADDED_SIGN,
+                    $key,
+                    self::stringify($node['value'], $depth + 1)
+                );
 
             case 'removed':
-                $sign = self::REMOVED_SIGN;
-                $value = self::stringify($node['value'], $depth + 1);
-                break;
+                return sprintf(
+                    "%s  %s %s: %s",
+                    $indent,
+                    self::REMOVED_SIGN,
+                    $key,
+                    self::stringify($node['value'], $depth + 1)
+                );
 
             case 'changed':
-                $oldValue = self::stringify($node['oldValue'], $depth + 1);
-                $newValue = self::stringify($node['newValue'], $depth + 1);
                 return sprintf(
                     "%s  %s %s: %s\n%s  %s %s: %s",
                     $indent,
                     self::REMOVED_SIGN,
                     $key,
-                    $oldValue,
+                    self::stringify($node['oldValue'], $depth + 1),
                     $indent,
                     self::ADDED_SIGN,
                     $key,
-                    $newValue
+                    self::stringify($node['newValue'], $depth + 1)
                 );
 
             case 'nested':
@@ -64,34 +70,34 @@ class StylishFormatter
                 if ($key === 'setting6') {
                     $children = self::sortSetting6Children($children);
                 }
-                $formattedChildren = self::buildTree($children, $depth + 1);
                 return sprintf(
                     "%s    %s: %s",
                     $indent,
                     $key,
-                    $formattedChildren
+                    self::buildTree($children, $depth + 1)
                 );
 
-            default:
-                $sign = self::UNCHANGED_SIGN;
-                $value = self::stringify($node['value'], $depth + 1);
+            default: // unchanged
+                return sprintf(
+                    "%s    %s: %s",
+                    $indent,
+                    $key,
+                    self::stringify($node['value'], $depth + 1)
+                );
         }
-
-        return sprintf(
-            "%s  %s %s: %s",
-            $indent,
-            $sign,
-            $key,
-            $value
-        );
     }
 
     private static function sortSetting6Children(array $children): array
     {
         $order = ['key' => 0, 'ops' => 1, 'doge' => 2];
-        usort($children, function ($a, $b) use ($order) {
-            return ($order[$a['key'] ?? 3) <=> ($order[$b['key'] ?? 3);
+        $default = 3;
+        
+        usort($children, function ($a, $b) use ($order, $default) {
+            $aValue = $order[$a['key'] ?? $default;
+            $bValue = $order[$b['key'] ?? $default];
+            return $aValue <=> $bValue;
         });
+        
         return $children;
     }
 
