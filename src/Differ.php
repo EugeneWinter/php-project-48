@@ -1,6 +1,6 @@
 <?php
 
-namespace Differ;
+namespace Differ\Differ;
 
 use Differ\Parsers\ParserFactory;
 use Differ\Formatters\{
@@ -11,18 +11,7 @@ use Differ\Formatters\{
 use RuntimeException;
 use Exception;
 
-if (!function_exists('Differ\genDiff')) {
-    /**
-     * Генерирует различия между двумя файлами
-     *
-     * @param string $path1   Путь к первому файлу
-     * @param string $path2   Путь ко второму файлу
-     * @param string $format  Формат вывода (stylish, plain, json)
-     *
-     * @return string Отформатированные различия
-     *
-     * @throws RuntimeException Если файлы не могут быть прочитаны или распаршены
-     */
+if (!function_exists('Differ\Differ\genDiff')) {
     function genDiff(string $path1, string $path2, string $format = 'stylish'): string
     {
         validateFiles($path1, $path2);
@@ -64,9 +53,6 @@ if (!function_exists('Differ\genDiff')) {
     }
 }
 
-/**
- * Проверяет существование файлов
- */
 function validateFiles(string $path1, string $path2): void
 {
     if (!file_exists($path1)) {
@@ -78,9 +64,6 @@ function validateFiles(string $path1, string $path2): void
     }
 }
 
-/**
- * Строит дерево различий между двумя объектами данных
- */
 function buildDiff(object $data1, object $data2): array
 {
     $keys = array_unique(array_merge(
@@ -96,9 +79,6 @@ function buildDiff(object $data1, object $data2): array
     );
 }
 
-/**
- * Строит узел различий
- */
 function buildNode(string $key, object $data1, object $data2): array
 {
     $value1 = $data1->$key ?? null;
@@ -144,17 +124,11 @@ function buildNode(string $key, object $data1, object $data2): array
     ];
 }
 
-/**
- * Проверяет, является ли значение объектом
- */
 function isObject(mixed $value): bool
 {
     return is_object($value) && !($value instanceof \DateTime);
 }
 
-/**
- * Подготавливает значение для сравнения
- */
 function prepareValue(mixed $value): mixed
 {
     if (is_object($value)) {
@@ -167,9 +141,6 @@ function prepareValue(mixed $value): mixed
     return $value;
 }
 
-/**
- * Форматирует дерево различий
- */
 function formatDiff(array $diff, string $format): string
 {
     return match ($format) {
