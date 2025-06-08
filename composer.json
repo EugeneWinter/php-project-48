@@ -15,7 +15,10 @@
     },
     "config": {
         "sort-packages": true,
-        "platform-check": false
+        "platform-check": false,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     },
     "autoload": {
         "psr-4": {
@@ -34,6 +37,10 @@
     "scripts": {
         "test": "phpunit",
         "lint": "phpcs --standard=PSR12 src tests bin/gendiff",
-        "lint-fix": "phpcbf --standard=PSR12 src tests bin/gendiff"
-    }
+        "lint-fix": "phpcbf --standard=PSR12 src tests bin/gendiff",
+        "phpstan": "phpstan analyse",
+        "coverage": "phpunit --coverage-clover build/logs/clover.xml"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
