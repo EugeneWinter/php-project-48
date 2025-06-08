@@ -18,7 +18,9 @@ class StylishFormatter
     {
         $indent = str_repeat(' ', $depth * self::INDENT_SIZE);
         $lines = array_map(
-            fn($node) => self::renderNode($node, $depth),
+            function ($node) use ($depth) {
+                return self::renderNode($node, $depth);
+            },
             $nodes
         );
 
@@ -93,7 +95,7 @@ class StylishFormatter
         return $children;
     }
 
-    private static function stringify(mixed $value, int $depth): string
+    private static function stringify($value, int $depth): string
     {
         if (is_bool($value)) {
             return $value ? 'true' : 'false';
