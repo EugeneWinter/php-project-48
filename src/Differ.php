@@ -200,7 +200,7 @@ function formatValue(mixed $value, int $indent): string
     }
     
     if (is_string($value)) {
-        return "\"{$value}\"";
+        return $value;
     }
     
     if (is_bool($value)) {
