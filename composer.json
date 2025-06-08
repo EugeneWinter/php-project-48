@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "DiffGenerator\\": "src/"
+            "Differ\\": "src/"
         },
         "files": [
             "src/Differ.php"

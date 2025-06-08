@@ -1,6 +1,6 @@
 <?php
 
-namespace DiffGenerator;
+namespace Differ;
 
 use DiffGenerator\Parsers\ParserFactory;
 use DiffGenerator\Formatters\{
