@@ -67,24 +67,17 @@ function buildDiff(object $data1, object $data2): array
     $data1Array = (array)$data1;
     $data2Array = (array)$data2;
     
-    $keys = array_unique(array_merge(
-        array_keys($data1Array),
-        array_keys($data2Array)
-    ));
+    $keys = array_keys($data1Array);
     
-    $orderedKeys = [];
-    foreach ($data1Array as $key => $value) {
-        $orderedKeys[] = $key;
-    }
-    foreach ($data2Array as $key => $value) {
-        if (!in_array($key, $orderedKeys)) {
-            $orderedKeys[] = $key;
+    foreach (array_keys($data2Array) as $key) {
+        if (!in_array($key, $keys)) {
+            $keys[] = $key;
         }
     }
     
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
-        $orderedKeys
+        $keys
     );
 }
 function buildNode(string $key, object $data1, object $data2): array
@@ -140,9 +133,9 @@ function isObject(mixed $value): bool
 function prepareValue(mixed $value): mixed
 {
     if (is_object($value)) {
-        $result = [];
+        $result = new \stdClass();
         foreach ($value as $k => $v) {
-            $result[$k] = prepareValue($v);
+            $result->{$k} = prepareValue($v);
         }
         return $result;
     }
@@ -151,9 +144,59 @@ function prepareValue(mixed $value): mixed
 
 function formatDiff(array $diff, string $format): string
 {
+    if ($format === 'stylish') {
+        return formatOutput($diff);
+    }
     return match ($format) {
         'plain' => PlainFormatter::format($diff),
         'json' => JsonFormatter::format($diff),
-        default => StylishFormatter::format($diff),
+        default => throw new \RuntimeException("Unknown format: {$format}"),
     };
+}
+
+function formatOutput(array $diff): string
+{
+    $result = "{\n";
+    foreach ($diff as $node) {
+        $result .= formatNode($node, 2);
+    }
+    $result .= "}\n";
+    return $result;
+}
+
+function formatNode(array $node, int $indent): string
+{
+    $spaces = str_repeat(' ', $indent);
+    $key = $node['key'];
+    
+    switch ($node['type']) {
+        case 'added':
+            return "{$spaces}+ {$key}: " . formatValue($node['value'], $indent + 4);
+        case 'removed':
+            return "{$spaces}- {$key}: " . formatValue($node['value'], $indent + 4);
+        case 'unchanged':
+            return "{$spaces}  {$key}: " . formatValue($node['value'], $indent + 4);
+        case 'changed':
+            return "{$spaces}- {$key}: " . formatValue($node['oldValue'], $indent + 4) . 
+                   "\n{$spaces}+ {$key}: " . formatValue($node['newValue'], $indent + 4);
+        case 'nested':
+            $children = formatOutput($node['children']);
+            return "{$spaces}  {$key}: {$children}";
+        default:
+            throw new \RuntimeException("Unknown node type: {$node['type']}");
+    }
+}
+
+function formatValue(mixed $value, int $indent): string
+{
+    if (is_object($value)) {
+        $result = "{\n";
+        foreach ($value as $k => $v) {
+            $spaces = str_repeat(' ', $indent);
+            $result .= "{$spaces}{$k}: " . formatValue($v, $indent + 4) . "\n";
+        }
+        $result .= str_repeat(' ', $indent - 2) . "}";
+        return $result;
+    }
+    return json_encode($value);
 }
