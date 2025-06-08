@@ -11,45 +11,43 @@ use Differ\Formatters\{
 use RuntimeException;
 use Exception;
 
-if (!function_exists('Differ\Differ\genDiff')) {
-    function genDiff(string $path1, string $path2, string $format = 'stylish'): string
-    {
-        validateFiles($path1, $path2);
+function genDiff(string $path1, string $path2, string $format = 'stylish'): string
+{
+    validateFiles($path1, $path2);
 
-        $content1 = file_get_contents($path1);
-        $content2 = file_get_contents($path2);
+    $content1 = file_get_contents($path1);
+    $content2 = file_get_contents($path2);
 
-        if ($content1 === false || $content2 === false) {
-            throw new RuntimeException('Failed to read file contents');
-        }
+    if ($content1 === false || $content2 === false) {
+        throw new RuntimeException('Failed to read file contents');
+    }
 
-        try {
-            $format1 = ParserFactory::getFormat($path1);
-            $format2 = ParserFactory::getFormat($path2);
+    try {
+        $format1 = ParserFactory::getFormat($path1);
+        $format2 = ParserFactory::getFormat($path2);
 
-            if ($format1 !== $format2) {
-                throw new RuntimeException(
-                    sprintf('Different file formats: %s and %s', $format1, $format2)
-                );
-            }
-
-            $data1 = ParserFactory::parse($content1, $format1);
-            $data2 = ParserFactory::parse($content2, $format2);
-        } catch (Exception $e) {
+        if ($format1 !== $format2) {
             throw new RuntimeException(
-                sprintf('Parse error: %s', $e->getMessage())
+                sprintf('Different file formats: %s and %s', $format1, $format2)
             );
         }
 
-        $diff = buildDiff($data1, $data2);
+        $data1 = ParserFactory::parse($content1, $format1);
+        $data2 = ParserFactory::parse($content2, $format2);
+    } catch (Exception $e) {
+        throw new RuntimeException(
+            sprintf('Parse error: %s', $e->getMessage())
+        );
+    }
 
-        try {
-            return formatDiff($diff, $format);
-        } catch (Exception $e) {
-            throw new RuntimeException(
-                sprintf('Format error: %s', $e->getMessage())
-            );
-        }
+    $diff = buildDiff($data1, $data2);
+
+    try {
+        return formatDiff($diff, $format);
+    } catch (Exception $e) {
+        throw new RuntimeException(
+            sprintf('Format error: %s', $e->getMessage())
+        );
     }
 }
 

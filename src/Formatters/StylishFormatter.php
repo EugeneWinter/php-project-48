@@ -59,7 +59,6 @@ class StylishFormatter
 
             case 'nested':
                 $children = $node['children'];
-                // Специальная обработка для setting6
                 if ($key === 'setting6') {
                     $children = self::sortSetting6Children($children);
                 }
