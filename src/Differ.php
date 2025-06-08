@@ -154,14 +154,14 @@ function formatDiff(array $diff, string $format): string
     };
 }
 
-function formatOutput(array $diff): string
+function formatOutput(array $diff, int $indent = 2): string
 {
-    $result = "{\n";
+    $lines = ["{"];
     foreach ($diff as $node) {
-        $result .= formatNode($node, 2);
+        $lines[] = formatNode($node, $indent);
     }
-    $result .= "}\n";
-    return $result;
+    $lines[] = str_repeat(' ', $indent - 2) . "}";
+    return implode("\n", $lines);
 }
 
 function formatNode(array $node, int $indent): string
@@ -180,8 +180,8 @@ function formatNode(array $node, int $indent): string
             return "{$spaces}- {$key}: " . formatValue($node['oldValue'], $indent + 4) . 
                    "\n{$spaces}+ {$key}: " . formatValue($node['newValue'], $indent + 4);
         case 'nested':
-            $children = formatOutput($node['children']);
-            return "{$spaces}  {$key}: {$children}";
+            $children = formatOutput($node['children'], $indent + 4);
+            return "{$spaces}  {$key}: " . ltrim($children);
         default:
             throw new \RuntimeException("Unknown node type: {$node['type']}");
     }
@@ -190,13 +190,26 @@ function formatNode(array $node, int $indent): string
 function formatValue(mixed $value, int $indent): string
 {
     if (is_object($value)) {
-        $result = "{\n";
+        $lines = ["{"];
         foreach ($value as $k => $v) {
-            $spaces = str_repeat(' ', $indent);
-            $result .= "{$spaces}{$k}: " . formatValue($v, $indent + 4) . "\n";
+            $childSpaces = str_repeat(' ', $indent + 4);
+            $lines[] = "{$childSpaces}{$k}: " . formatValue($v, $indent + 4);
         }
-        $result .= str_repeat(' ', $indent - 2) . "}";
-        return $result;
+        $lines[] = str_repeat(' ', $indent) . "}";
+        return implode("\n", $lines);
     }
-    return json_encode($value);
+    
+    if (is_string($value)) {
+        return "\"{$value}\"";
+    }
+    
+    if (is_bool($value)) {
+        return $value ? 'true' : 'false';
+    }
+    
+    if (is_null($value)) {
+        return 'null';
+    }
+    
+    return (string)$value;
 }
