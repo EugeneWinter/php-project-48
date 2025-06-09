@@ -150,15 +150,16 @@ function formatDiff(array $diff, string $format): string
     };
 }
 
-function formatOutput(array $diff, int $indent = 2): string
+function formatOutput(array $tree, int $indent = 2): string
 {
-    $lines = ["{"];
-    
-    foreach ($diff as $node) {
+    $lines = ['{'];
+
+    foreach ($tree as $node) {
         $lines[] = formatNode($node, $indent);
     }
-    
-    $lines[] = str_repeat(' ', $indent - 2) . "}";
+
+    $lines[] = str_repeat(' ', $indent - 2) . '}';
+
     return implode("\n", $lines);
 }
 
@@ -166,20 +167,20 @@ function formatNode(array $node, int $indent): string
 {
     $spaces = str_repeat(' ', $indent);
     $key = $node['key'];
-    
+
     switch ($node['type']) {
         case 'nested':
             $children = formatOutput($node['children'], $indent + 4);
             return "{$spaces}  {$key}: " . ltrim($children);
         case 'unchanged':
-            return "{$spaces}  {$key}: " . formatValue($node['value'], $indent + 4);
+            return "{$spaces}  {$key}: " . formatValue($node['value'], $indent);
         case 'added':
-            return "{$spaces}+ {$key}: " . formatValue($node['value'], $indent + 4);
+            return "{$spaces}+ {$key}: " . formatValue($node['value'], $indent);
         case 'removed':
-            return "{$spaces}- {$key}: " . formatValue($node['value'], $indent + 4);
+            return "{$spaces}- {$key}: " . formatValue($node['value'], $indent);
         case 'changed':
-            return "{$spaces}- {$key}: " . formatValue($node['oldValue'], $indent + 4) . 
-                   "\n{$spaces}+ {$key}: " . formatValue($node['newValue'], $indent + 4);
+            return "{$spaces}- {$key}: " . formatValue($node['oldValue'], $indent) . "\n"
+                 . "{$spaces}+ {$key}: " . formatValue($node['newValue'], $indent);
         default:
             throw new \RuntimeException("Unknown node type: {$node['type']}");
     }
@@ -188,26 +189,23 @@ function formatNode(array $node, int $indent): string
 function formatValue(mixed $value, int $indent): string
 {
     if (is_object($value)) {
-        $lines = ["{"];
+        $lines = ['{'];
         foreach ($value as $k => $v) {
-            $childSpaces = str_repeat(' ', $indent + 4);
-            $lines[] = "{$childSpaces}{$k}: " . formatValue($v, $indent + 4);
+            $childIndent = $indent + 4;
+            $spaces = str_repeat(' ', $childIndent);
+            $lines[] = "{$spaces}{$k}: " . formatValue($v, $childIndent);
         }
-        $lines[] = str_repeat(' ', $indent) . "}";
+        $lines[] = str_repeat(' ', $indent) . '}';
         return implode("\n", $lines);
-    }
-
-    if ($value === '') {
-        return '';
     }
 
     if (is_bool($value)) {
         return $value ? 'true' : 'false';
     }
 
-    if (is_null($value)) {
+    if ($value === null) {
         return 'null';
     }
 
-    return (string)$value;
+    return (string) $value;
 }
