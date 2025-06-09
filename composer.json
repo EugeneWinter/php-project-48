@@ -21,9 +21,6 @@
         }
     },
     "autoload": {
-        "psr-4": {
-            "Differ\\": "src/"
-        },
         "files": [
             "src/Differ.php",
             "src/Formatters.php",
