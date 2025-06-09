@@ -3,11 +3,9 @@
 namespace Differ;
 
 use Differ\Parsers\ParserFactory;
-use Differ\Formatters\{
-    StylishFormatter,
-    PlainFormatter,
-    JsonFormatter
-};
+use function Differ\Formatters\JsonFormatter\formatJson;
+use function Differ\Formatters\PlainFormatter\formatPlain;
+use function Differ\Formatters\StylishFormatter\formatStylish;
 use RuntimeException;
 use Exception;
 

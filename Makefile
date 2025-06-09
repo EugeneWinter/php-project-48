@@ -1,4 +1,5 @@
-.PHONY: lint test
+.PHONY: 
+    lint test
 
 lint:
     vendor/bin/phpcs --standard=PSR12 src tests bin/gendiff
