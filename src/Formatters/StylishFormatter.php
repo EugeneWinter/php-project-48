@@ -55,7 +55,7 @@ function toString(mixed $value, int $depth = 1): string
     }
 
     $indent = str_repeat('    ', $depth);
-    $bracketIndent = str_repeat('    ', max($depth - 1, 0));
+    $bracketIndent = str_repeat('    ', $depth - 1);
     $assoc = (array)$value;
     ksort($assoc);
 
