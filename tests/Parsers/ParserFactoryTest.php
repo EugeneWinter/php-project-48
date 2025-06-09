@@ -2,78 +2,69 @@
 
 namespace Differ\Tests\Parsers;
 
-use Differ\Parsers\ParserFactory;
-use PHPUnit\Framework\TestCase;
+use function Differ\Parsers\getFormat;
+use function Differ\Parsers\parse;
 use Exception;
-
-/**
- * Тесты для ParserFactory
- *
- * Проверяет работу фабрики парсеров для разных форматов файлов
- *
- * @category DiffGenerator
- * @package  Tests\Parsers
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
- */
-class ParserFactoryTest extends TestCase
+function run_parser_tests()
 {
-    /**
-     * Тестирует определение формата по расширению файла
-     *
-     * @return void
-     */
-    public function testGetFormat(): void
-    {
-        $this->assertEquals('json', ParserFactory::getFormat('/path/to/file.json'));
-        $this->assertEquals('yaml', ParserFactory::getFormat('/path/to/file.yaml'));
-        $this->assertEquals('yaml', ParserFactory::getFormat('/path/to/file.yml'));
+    testGetFormat();
+    testGetFormatWithUnsupportedExtension();
+    testParseWithDifferentFormats();
+    testParseWithUnsupportedFormat();
+    
+    echo "All parser tests passed!\n";
+}
+
+function testGetFormat()
+{
+    assert('json' === getFormat('/path/to/file.json'));
+    assert('yaml' === getFormat('/path/to/file.yaml'));
+    assert('yaml' === getFormat('/path/to/file.yml'));
+}
+
+function testGetFormatWithUnsupportedExtension()
+{
+    $exceptionThrown = false;
+    
+    try {
+        getFormat('/path/to/file.txt');
+    } catch (Exception $e) {
+        $exceptionThrown = true;
+        assert($e instanceof Exception);
+        assert(str_contains($e->getMessage(), 'Unsupported file extension: txt'));
     }
+    
+    assert($exceptionThrown, 'Expected exception was not thrown');
+}
 
-    /**
-     * Тестирует обработку неподдерживаемых расширений файлов
-     *
-     * @return void
-     */
-    public function testGetFormatWithUnsupportedExtension(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported file extension: txt');
+function testParseWithDifferentFormats()
+{
+    $json = '{"key":"value"}';
+    $result = parse($json, 'json');
+    assert(is_object($result));
+    assert('value' === $result->key);
 
-        ParserFactory::getFormat('/path/to/file.txt');
+    $yaml = "key: value";
+    $result = parse($yaml, 'yaml');
+    assert(is_object($result));
+    assert('value' === $result->key);
+}
+
+function testParseWithUnsupportedFormat()
+{
+    $exceptionThrown = false;
+    
+    try {
+        parse('<xml>value</xml>', 'xml');
+    } catch (Exception $e) {
+        $exceptionThrown = true;
+        assert($e instanceof Exception);
+        assert(str_contains($e->getMessage(), 'Unsupported format: xml'));
     }
+    
+    assert($exceptionThrown, 'Expected exception was not thrown');
+}
 
-    /**
-     * Тестирует парсинг разных форматов данных
-     *
-     * @return void
-     */
-    public function testParseWithDifferentFormats(): void
-    {
-        // Тестирование JSON
-        $json = '{"key":"value"}';
-        $result = ParserFactory::parse($json, 'json');
-        $this->assertIsObject($result);
-        $this->assertEquals('value', $result->key);
-
-        // Тестирование YAML
-        $yaml = "key: value";
-        $result = ParserFactory::parse($yaml, 'yaml');
-        $this->assertIsObject($result);
-        $this->assertEquals('value', $result->key);
-    }
-
-    /**
-     * Тестирует обработку неизвестного формата данных
-     *
-     * @return void
-     */
-    public function testParseWithUnsupportedFormat(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported format: xml');
-
-        ParserFactory::parse('<xml>value</xml>', 'xml');
-    }
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
+    run_parser_tests();
 }

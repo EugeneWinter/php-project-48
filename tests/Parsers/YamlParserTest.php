@@ -2,80 +2,67 @@
 
 namespace Differ\Tests\Parsers;
 
-use Differ\Parsers\YamlParser;
-use PHPUnit\Framework\TestCase;
+use function Differ\Parsers\YamlParser\parse;
+use function Differ\Parsers\YamlParser\supports;
 use Exception;
 
-/**
- * Тесты для YamlParser
- *
- * Проверяет корректность парсинга YAML-данных и определение поддерживаемых форматов
- *
- * @category DiffGenerator
- * @package  Tests\Parsers
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
- */
-class YamlParserTest extends TestCase
+function run_yaml_parser_tests()
 {
-    /**
-     * Тестирует парсинг валидного YAML-документа
-     *
-     * @return void
-     */
-    public function testParseValidYaml(): void
-    {
-        $yaml = <<<YAML
-        key: value
-        nested:
-          item1: value1
-          item2: 123
-        YAML;
+    testParseValidYaml();
+    testParseInvalidYaml();
+    testSupportsYamlFormats();
+    testParseEmptyYaml();
+    
+    echo "All YAML parser tests passed!\n";
+}
 
-        $result = YamlParser::parse($yaml);
+function testParseValidYaml()
+{
+    $yaml = <<<YAML
+    key: value
+    nested:
+      item1: value1
+      item2: 123
+    YAML;
 
-        $this->assertIsObject($result);
-        $this->assertEquals('value', $result->key);
-        $this->assertEquals('value1', $result->nested->item1);
-        $this->assertEquals(123, $result->nested->item2);
+    $result = parse($yaml);
+
+    assert(is_object($result));
+    assert('value' === $result->key);
+    assert('value1' === $result->nested->item1);
+    assert(123 === $result->nested->item2);
+}
+
+function testParseInvalidYaml()
+{
+    $exceptionThrown = false;
+    
+    try {
+        parse("key: [value");
+    } catch (Exception $e) {
+        $exceptionThrown = true;
+        assert($e instanceof Exception);
+        assert(str_contains($e->getMessage(), 'YAML parse error'));
     }
+    
+    assert($exceptionThrown, 'Expected exception was not thrown');
+}
 
-    /**
-     * Тестирует обработку невалидного YAML
-     *
-     * @return void
-     */
-    public function testParseInvalidYaml(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('YAML parse error');
+function testSupportsYamlFormats()
+{
+    assert(true === supports('yaml'));
+    assert(true === supports('yml'));
+    assert(false === supports('json'));
+    assert(false === supports('xml'));
+}
 
-        YamlParser::parse("key: [value");
-    }
+function testParseEmptyYaml()
+{
+    $result = parse('');
+    assert(is_object($result));
+    assert(empty(get_object_vars($result)));
+}
 
-    /**
-     * Тестирует определение поддерживаемых форматов
-     *
-     * @return void
-     */
-    public function testSupportsYamlFormats(): void
-    {
-        $this->assertTrue(YamlParser::supports('yaml'));
-        $this->assertTrue(YamlParser::supports('yml'));
-        $this->assertFalse(YamlParser::supports('json'));
-        $this->assertFalse(YamlParser::supports('xml'));
-    }
-
-    /**
-     * Тестирует парсинг пустого YAML-документа
-     *
-     * @return void
-     */
-    public function testParseEmptyYaml(): void
-    {
-        $result = YamlParser::parse('');
-        $this->assertIsObject($result);
-        $this->assertEmpty(get_object_vars($result));
-    }
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
+    run_yaml_parser_tests();
 }
