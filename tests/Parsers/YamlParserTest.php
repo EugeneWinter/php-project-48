@@ -2,67 +2,51 @@
 
 namespace Differ\Tests\Parsers;
 
-use function Differ\Parsers\YamlParser\parse;
-use function Differ\Parsers\YamlParser\supports;
+use PHPUnit\Framework\TestCase;
 use Exception;
 
-function run_yaml_parser_tests()
+use function Differ\Parsers\YamlParser\parse;
+use function Differ\Parsers\YamlParser\supports;
+
+class YamlParserTest extends TestCase
 {
-    testParseValidYaml();
-    testParseInvalidYaml();
-    testSupportsYamlFormats();
-    testParseEmptyYaml();
-    
-    echo "All YAML parser tests passed!\n";
-}
+    public function testParseValidYaml(): void
+    {
+        $yaml = <<<YAML
+key: value
+nested:
+  item1: value1
+  item2: 123
+YAML;
 
-function testParseValidYaml()
-{
-    $yaml = <<<YAML
-    key: value
-    nested:
-      item1: value1
-      item2: 123
-    YAML;
+        $result = parse($yaml);
 
-    $result = parse($yaml);
-
-    assert(is_object($result));
-    assert('value' === $result->key);
-    assert('value1' === $result->nested->item1);
-    assert(123 === $result->nested->item2);
-}
-
-function testParseInvalidYaml()
-{
-    $exceptionThrown = false;
-    
-    try {
-        parse("key: [value");
-    } catch (Exception $e) {
-        $exceptionThrown = true;
-        assert($e instanceof Exception);
-        assert(str_contains($e->getMessage(), 'YAML parse error'));
+        $this->assertIsObject($result);
+        $this->assertEquals('value', $result->key);
+        $this->assertEquals('value1', $result->nested->item1);
+        $this->assertEquals(123, $result->nested->item2);
     }
-    
-    assert($exceptionThrown, 'Expected exception was not thrown');
-}
 
-function testSupportsYamlFormats()
-{
-    assert(true === supports('yaml'));
-    assert(true === supports('yml'));
-    assert(false === supports('json'));
-    assert(false === supports('xml'));
-}
+    public function testParseInvalidYaml(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('/YAML parse error/');
 
-function testParseEmptyYaml()
-{
-    $result = parse('');
-    assert(is_object($result));
-    assert(empty(get_object_vars($result)));
-}
+        parse("key: [value");
+    }
 
-if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
-    run_yaml_parser_tests();
+    public function testSupportsYamlFormats(): void
+    {
+        $this->assertTrue(supports('yaml'));
+        $this->assertTrue(supports('yml'));
+        $this->assertFalse(supports('json'));
+        $this->assertFalse(supports('xml'));
+    }
+
+    public function testParseEmptyYaml(): void
+    {
+        $result = parse('');
+        $this->assertIsObject($result);
+        $this->assertEmpty(get_object_vars($result));
+    }
 }
