@@ -89,15 +89,15 @@ TEXT;
       + setting3: null
       + setting4: blah blah
       + setting5: {
-            key5: value5
-        }
+    key5: value5
+}
         setting6: {
-            key: value
-          + ops: vops
             doge: {
               - wow: 
               + wow: so much
             }
+            key: value
+          + ops: vops
         }
     }
 }
@@ -128,15 +128,15 @@ TEXT;
       + setting3: null
       + setting4: blah blah
       + setting5: {
-            key5: value5
-        }
+    key5: value5
+}
         setting6: {
-            key: value
-          + ops: vops
             doge: {
-              - wow:
+              - wow: 
               + wow: so much
             }
+            key: value
+          + ops: vops
         }
     }
 }
