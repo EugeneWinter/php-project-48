@@ -40,7 +40,7 @@ function formatStylish(array $diff): string
     return "{\n" . $iter($diff, 0) . "\n}";
 }
 
-function toString(mixed $value, int $depth): string
+function toString(mixed $value, int $depth = 1): string
 {
     if (is_bool($value)) {
         return $value ? 'true' : 'false';
@@ -55,15 +55,16 @@ function toString(mixed $value, int $depth): string
     }
 
     $indent = str_repeat('    ', $depth);
+    $bracketIndent = str_repeat('    ', $depth - 1);
     $assoc = (array)$value;
     ksort($assoc);
 
-    $props = array_map(
-        fn($key) => "{$indent}    {$key}: " . toString($assoc[$key], $depth + 1),
+    $lines = array_map(
+        fn($key) => "{$indent}{$key}: " . toString($assoc[$key], $depth + 1),
         array_keys($assoc)
     );
 
-    return "{\n" . implode("\n", $props) . "\n{$indent}}";
+    return "{\n" . implode("\n", $lines) . "\n{$bracketIndent}}";
 }
 
 function sortByKey(array $nodes): array

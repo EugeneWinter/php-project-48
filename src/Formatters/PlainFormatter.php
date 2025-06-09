@@ -64,7 +64,8 @@ function buildLines(array $diff, string $path = ''): array
                 'unchanged' => $acc,
                 default => $acc,
             };
-        },
+          },
+        [] 
     );
 }
 
