@@ -1,27 +1,13 @@
 <?php
 
-/**
- * Форматер для преобразования различий в формат JSON (функциональный стиль)
- *
- * @category DiffGenerator
- * @package  Formatters
- * @author   Eugene Winter
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
- */
-
 namespace Differ\Formatters\JsonFormatter;
 
 /**
  * Форматирует массив различий в JSON строку
- *
- * @param array $diff Массив различий
- *
- * @return string JSON строка с различиями
  */
-function format(array $diff): string
+function formatJson(array $diff): string
 {
-    $structured = convertToStructured($diff);
+    $structured = convertToStructuredJson($diff);
     $json = json_encode($structured, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
     if ($json === false) {
@@ -31,14 +17,7 @@ function format(array $diff): string
     return $json;
 }
 
-/**
- * Преобразует плоский массив различий в структурированный массив
- *
- * @param array $diff Массив различий
- *
- * @return array Структурированный массив
- */
-function convertToStructured(array $diff): array
+function convertToStructuredJson(array $diff): array
 {
     return array_reduce(
         $diff,
@@ -49,19 +28,19 @@ function convertToStructured(array $diff): array
             $value = match ($type) {
                 'added' => [
                     'type' => 'added',
-                    'value' => prepareValue($node['value']),
+                    'value' => prepareValueJson($node['value']),
                 ],
                 'removed' => [
                     'type' => 'removed',
-                    'value' => prepareValue($node['value']),
+                    'value' => prepareValueJson($node['value']),
                 ],
                 'changed' => [
                     'type' => 'changed',
-                    'oldValue' => prepareValue($node['oldValue']),
-                    'newValue' => prepareValue($node['newValue']),
+                    'oldValue' => prepareValueJson($node['oldValue']),
+                    'newValue' => prepareValueJson($node['newValue']),
                 ],
-                'nested' => convertToStructured($node['children']),
-                default => prepareValue($node['value']),
+                'nested' => convertToStructuredJson($node['children']),
+                default => prepareValueJson($node['value']),
             };
 
             return [...$acc, $key => $value];
@@ -70,14 +49,7 @@ function convertToStructured(array $diff): array
     );
 }
 
-/**
- * Подготавливает значение для включения в JSON
- *
- * @param mixed $value Значение
- *
- * @return mixed Подготовленное значение
- */
-function prepareValue(mixed $value): mixed
+function prepareValueJson(mixed $value): mixed
 {
     if (is_object($value)) {
         $assoc = (array) $value;
@@ -85,7 +57,7 @@ function prepareValue(mixed $value): mixed
         return array_reduce(
             array_keys($assoc),
             function (array $acc, string $key) use ($assoc): array {
-                return [...$acc, $key => prepareValue($assoc[$key])];
+                return [...$acc, $key => prepareValueJson($assoc[$key])];
             },
             []
         );
