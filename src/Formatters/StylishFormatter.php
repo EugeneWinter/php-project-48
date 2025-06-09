@@ -50,20 +50,19 @@ function toString(mixed $value, int $depth = 1): string
         return 'null';
     }
 
-    if (!is_object($value)) {
+    if (!is_array($value) && !is_object($value)) {
         return (string)$value;
     }
 
+    $assoc = is_object($value) ? (array)$value : $value;
+
     $indent = str_repeat('    ', $depth);
     $bracketIndent = str_repeat('    ', $depth - 1);
-    $assoc = (array)$value;
     ksort($assoc);
 
     $lines = array_map(
         function ($key) use ($assoc, $depth, $indent) {
-            $formattedValue = is_object($assoc[$key]) 
-                ? toString($assoc[$key], $depth + 1)
-                : toString($assoc[$key], $depth);
+            $formattedValue = toString($assoc[$key], $depth + 1);
             return "{$indent}{$key}: {$formattedValue}";
         },
         array_keys($assoc)
