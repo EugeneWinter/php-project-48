@@ -8,7 +8,7 @@ namespace Differ\Formatters\StylishFormatter;
  * @param array $diff
  * @return string
  */
-function format(array $diff): string
+function formatStylish(array $diff): string
 {
     return buildTree($diff);
 }

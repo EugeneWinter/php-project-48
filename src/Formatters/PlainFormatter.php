@@ -19,7 +19,7 @@ namespace Differ\Formatters\PlainFormatter;
  *
  * @return string Текстовое представление различий
  */
-function format(array $diff): string
+function formatPlain(array $diff): string
 {
     $sortedDiff = sortDiff($diff);
     $lines = buildLines($sortedDiff);
