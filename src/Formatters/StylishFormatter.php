@@ -14,8 +14,7 @@ function formatStylish(array $diff): string
             switch ($node['type']) {
             case 'nested':
                 $children = $iter($node['children'], $depth + 1);
-                $indent = str_repeat('    ', $depth);
-                $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}}";
+                $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
                 break;
 
             case 'changed':
