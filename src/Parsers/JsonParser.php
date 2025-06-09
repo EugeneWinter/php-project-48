@@ -1,51 +1,41 @@
 <?php
 
-namespace Differ\Parsers;
+declare(strict_types=1);
+
+namespace Differ\Parsers\JsonParser;
 
 use Exception;
 
 /**
- * Парсер JSON файлов
+ * Преобразует JSON-содержимое в объект
  *
- * @category DiffGenerator
- * @package  Parsers
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
+ * @param string $content JSON-содержимое для парсинга
+ *
+ * @return object Распарсенные данные в виде объекта
+ *
+ * @throws Exception В случае ошибки парсинга JSON
  */
-class JsonParser implements ParserInterface
+function parse(string $content): object
 {
-    /**
-     * Преобразует JSON-содержимое в объект
-     *
-     * @param string $content JSON-содержимое для парсинга
-     *
-     * @return object Распарсенные данные в виде объекта
-     *
-     * @throws Exception В случае ошибки парсинга JSON
-     */
-    public static function parse(string $content): object
-    {
-        $data = json_decode($content);
+    $data = json_decode($content);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception(
-                sprintf('JSON parse error: %s', json_last_error_msg())
-            );
-        }
-
-        return $data;
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception(
+            sprintf('JSON parse error: %s', json_last_error_msg())
+        );
     }
 
-    /**
-     * Проверяет поддержку указанного формата
-     *
-     * @param string $format Формат файла для проверки
-     *
-     * @return bool True если формат поддерживается
-     */
-    public static function supports(string $format): bool
-    {
-        return $format === 'json';
-    }
+    return $data;
+}
+
+/**
+ * Проверяет поддержку указанного формата
+ *
+ * @param string $format Формат файла для проверки
+ *
+ * @return bool True если формат поддерживается
+ */
+function supports(string $format): bool
+{
+    return $format === 'json';
 }

@@ -1,141 +1,139 @@
 <?php
 
 /**
- * Форматер для вывода различий в простом текстовом формате
- *
- * PHP version 7.4
+ * Форматер для вывода различий в простом текстовом формате (функциональный стиль)
  *
  * @category DiffGenerator
  * @package  Formatters
- * @author   Eugene Winter <corvoattano200529@gmail.com>
+ * @author   Eugene Winter
  * @license  MIT https://opensource.org/licenses/MIT
  * @link     https://github.com/EugeneWinter/php-project-48
  */
 
-namespace Differ\Formatters;
+namespace Differ\Formatters\PlainFormatter;
 
 /**
- * Форматер для вывода различий в простом текстовом формате
+ * Форматирует массив различий в простой текст
  *
- * @category DiffGenerator
- * @package  Formatters
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
+ * @param array $diff Массив различий
+ *
+ * @return string Текстовое представление различий
  */
-class PlainFormatter
+function format(array $diff): string
 {
-    /**
-     * Форматирует массив различий в простой текст
-     *
-     * @param array $diff Массив различий
-     *
-     * @return string Текстовое представление различий
-     */
-    public static function format(array $diff): string
-    {
-        $lines = [];
-        self::buildLines($diff, $lines);
-        return implode("\n", $lines);
-    }
+    $sortedDiff = sortDiff($diff);
+    $lines = buildLines($sortedDiff);
+    return implode("\n", $lines);
+}
 
-    /**
-     * Рекурсивно строит строки для вывода различий
-     *
-     * @param array  $diff   Массив различий
-     * @param array  &$lines Ссылка на массив строк вывода
-     * @param string $path   Текущий путь к свойству
-     *
-     * @return void
-     */
-    private static function buildLines(array $diff, array &$lines, string $path = ''): void
-    {
-        usort(
-            $diff,
-            function ($a, $b) {
-                $order = ['doge', 'ops'];
-                $posA = array_search($a['key'], $order);
-                $posB = array_search($b['key'], $order);
+/**
+ * Сортирует массив diff по ключу с учётом специального порядка
+ *
+ * @param array $diff
+ * @return array
+ */
+function sortDiff(array $diff): array
+{
+    $order = ['doge', 'ops'];
 
-                if ($posA !== false && $posB !== false) {
-                    return $posA - $posB;
-                }
-                if ($posA !== false) {
-                    return -1;
-                }
-                if ($posB !== false) {
-                    return 1;
-                }
-                return strcmp($a['key'], $b['key']);
-            }
-        );
+    $compare = function (array $a, array $b) use ($order): int {
+        $posA = array_search($a['key'], $order, true);
+        $posB = array_search($b['key'], $order, true);
 
-        foreach ($diff as $node) {
+        if ($posA !== false && $posB !== false) {
+            return $posA <=> $posB;
+        }
+        if ($posA !== false) {
+            return -1;
+        }
+        if ($posB !== false) {
+            return 1;
+        }
+        return strcmp($a['key'], $b['key']);
+    };
+
+    $copy = $diff;
+    uasort($copy, $compare);
+
+    return array_values($copy);
+}
+
+/**
+ * Рекурсивно строит массив строк для вывода различий
+ *
+ * @param array $diff Массив различий
+ * @param string $path Текущий путь (для рекурсии)
+ *
+ * @return array Массив строк
+ */
+function buildLines(array $diff, string $path = ''): array
+{
+    return array_reduce(
+        $diff,
+        function (array $acc, array $node) use ($path): array {
             $currentPath = $path === '' ? $node['key'] : "{$path}.{$node['key']}";
 
-            switch ($node['type']) {
-                case 'added':
-                    $value = self::stringifyValue($node['value']);
-                    $lines[] = sprintf(
+            return match ($node['type']) {
+                'added' => [
+                    ...$acc,
+                    sprintf(
                         "Property '%s' was added with value: %s",
                         $currentPath,
-                        $value
-                    );
-                    break;
-
-                case 'removed':
-                    $lines[] = sprintf(
+                        stringifyValue($node['value'])
+                    ),
+                ],
+                'removed' => [
+                    ...$acc,
+                    sprintf(
                         "Property '%s' was removed",
                         $currentPath
-                    );
-                    break;
-
-                case 'changed':
-                    $oldValue = self::stringifyValue($node['oldValue']);
-                    $newValue = self::stringifyValue($node['newValue']);
-                    $lines[] = sprintf(
+                    ),
+                ],
+                'changed' => [
+                    ...$acc,
+                    sprintf(
                         "Property '%s' was updated. From %s to %s",
                         $currentPath,
-                        $oldValue,
-                        $newValue
-                    );
-                    break;
+                        stringifyValue($node['oldValue']),
+                        stringifyValue($node['newValue'])
+                    ),
+                ],
+                'nested' => [
+                    ...$acc,
+                    ...buildLines($node['children'], $currentPath),
+                ],
+                'unchanged' => $acc,
+                default => $acc,
+            };
+        },
+        []
+    );
+}
 
-                case 'nested':
-                    self::buildLines($node['children'], $lines, $currentPath);
-                    break;
-
-                case 'unchanged':
-                    break;
-            }
-        }
+/**
+ * Преобразует значение в строку для вывода
+ *
+ * @param mixed $value
+ *
+ * @return string
+ */
+function stringifyValue(mixed $value): string
+{
+    if (is_object($value) || is_array($value)) {
+        return '[complex value]';
     }
 
-    /**
-     * Преобразует значение в строку для вывода
-     *
-     * @param mixed $value Значение для преобразования
-     *
-     * @return string Строковое представление значения
-     */
-    private static function stringifyValue($value): string
-    {
-        if (is_object($value) || is_array($value)) {
-            return '[complex value]';
-        }
-
-        if (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        }
-
-        if ($value === null) {
-            return 'null';
-        }
-
-        if (is_string($value)) {
-            return "'" . str_replace("'", "\'", $value) . "'";
-        }
-
-        return (string) $value;
+    if (is_bool($value)) {
+        return $value ? 'true' : 'false';
     }
+
+    if ($value === null) {
+        return 'null';
+    }
+
+    if (is_string($value)) {
+        return "'" . str_replace("'", "\\'", $value) . "'";
+    }
+
+    return (string) $value;
 }

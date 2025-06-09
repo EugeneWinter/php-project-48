@@ -1,70 +1,77 @@
 <?php
 
-namespace Differ\Parsers;
+declare(strict_types=1);
+
+namespace Differ\Parsers\ParserFactory;
 
 use Exception;
 
+use function Differ\Parsers\JsonParser\parse as parseJson;
+use function Differ\Parsers\JsonParser\supports as supportsJson;
+use function Differ\Parsers\YamlParser\parse as parseYaml;
+use function Differ\Parsers\YamlParser\supports as supportsYaml;
+
 /**
- * Фабрика для создания парсеров на основе формата файла
+ * Определяет формат файла по расширению
  *
- * Определяет подходящий парсер и преобразует содержимое файла в объект PHP
- *
- * @category DiffGenerator
- * @package  Parsers
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
+ * @param string $filePath
+ * @return string
+ * @throws Exception
  */
-class ParserFactory
+function getFormat(string $filePath): string
 {
-    /** @var array<class-string> Список доступных классов парсеров */
-    private static array $parsers = [
-        JsonParser::class,
-        YamlParser::class,
+    $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+    return match ($extension) {
+        'json' => 'json',
+        'yml', 'yaml' => 'yaml',
+        default => throw new Exception(
+            sprintf('Unsupported file extension: %s', $extension)
+        ),
+    };
+}
+
+/**
+ * Возвращает список доступных парсеров
+ *
+ * @return list<array{supports: callable(string): bool, parse: callable(string): object}>
+ */
+function getParsers(): array
+{
+    return [
+        [
+            'supports' => supportsJson(...),
+            'parse'    => parseJson(...),
+        ],
+        [
+            'supports' => supportsYaml(...),
+            'parse'    => parseYaml(...),
+        ],
     ];
+}
 
-    /**
-     * Определяет формат файла по его расширению
-     *
-     * @param string $filePath Путь к файлу
-     *
-     * @return string Определённый формат ('json' или 'yaml')
-     *
-     * @throws Exception Если расширение файла не поддерживается
-     */
-    public static function getFormat(string $filePath): string
-    {
-        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+/**
+ * Парсит содержимое с помощью подходящего парсера
+ *
+ * @param string $content
+ * @param string $format
+ * @return object
+ * @throws Exception
+ */
+function parse(string $content, string $format): object
+{
+    $parsers = getParsers();
 
-        return match ($extension) {
-            'json' => 'json',
-            'yml', 'yaml' => 'yaml',
-            default => throw new Exception(
-                sprintf('Unsupported file extension: %s', $extension)
-            ),
-        };
+    $matched = array_filter(
+        $parsers,
+        fn(array $parser): bool => ($parser['supports'])($format)
+    );
+
+    $first = reset($matched);
+
+    if ($first === false) {
+        throw new Exception(sprintf('Unsupported format: %s', $format));
     }
 
-    /**
-     * Парсит содержимое с помощью подходящего парсера
-     *
-     * @param string $content Содержимое для парсинга
-     * @param string $format  Формат содержимого ('json' или 'yaml')
-     *
-     * @return object Распарсенные данные
-     *
-     * @throws Exception Если не найден подходящий парсер
-     */
-    public static function parse(string $content, string $format): object
-    {
-        foreach (self::$parsers as $parser) {
-            if ($parser::supports($format)) {
-                return $parser::parse($content);
-            }
-        }
-
-        throw new Exception(
-            sprintf('Unsupported format: %s', $format)
-        );
-    }
+    return ($first['parse'])($content);
 }

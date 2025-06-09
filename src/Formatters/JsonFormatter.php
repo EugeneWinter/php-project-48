@@ -1,107 +1,95 @@
 <?php
 
 /**
- * Форматер для преобразования различий в формат JSON
+ * Форматер для преобразования различий в формат JSON (функциональный стиль)
  *
  * @category DiffGenerator
  * @package  Formatters
- * @author   Eugene Winter <corvoattano200529@gmail.com>
+ * @author   Eugene Winter
  * @license  MIT https://opensource.org/licenses/MIT
  * @link     https://github.com/EugeneWinter/php-project-48
  */
 
-namespace Differ\Formatters;
+namespace Differ\Formatters\JsonFormatter;
 
 /**
- * Класс для форматирования различий в JSON
+ * Форматирует массив различий в JSON строку
  *
- * @category DiffGenerator
- * @package  Formatters
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
+ * @param array $diff Массив различий
+ *
+ * @return string JSON строка с различиями
  */
-class JsonFormatter
+function format(array $diff): string
 {
-    /**
-     * Форматирует массив различий в JSON строку
-     *
-     * @param array $diff Массив различий
-     *
-     * @return string JSON строка с различиями
-     */
-    public static function format(array $diff): string
-    {
-        $result = self::convertToStructured($diff);
-        return json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    $structured = convertToStructured($diff);
+    $json = json_encode($structured, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+    if ($json === false) {
+        throw new \RuntimeException('Failed to encode JSON');
     }
 
-    /**
-     * Преобразует плоский массив различий в структурированный массив
-     *
-     * @param array $diff Массив различий
-     *
-     * @return array Структурированный массив для преобразования в JSON
-     */
-    private static function convertToStructured(array $diff): array
-    {
-        $result = [];
+    return $json;
+}
 
-        foreach ($diff as $node) {
+/**
+ * Преобразует плоский массив различий в структурированный массив
+ *
+ * @param array $diff Массив различий
+ *
+ * @return array Структурированный массив
+ */
+function convertToStructured(array $diff): array
+{
+    return array_reduce(
+        $diff,
+        function (array $acc, array $node): array {
             $key = $node['key'];
             $type = $node['type'];
 
-            switch ($type) {
-                case 'added':
-                    $result[$key] = [
-                        'type' => 'added',
-                        'value' => self::prepareValue($node['value'])
-                    ];
-                    break;
+            $value = match ($type) {
+                'added' => [
+                    'type' => 'added',
+                    'value' => prepareValue($node['value']),
+                ],
+                'removed' => [
+                    'type' => 'removed',
+                    'value' => prepareValue($node['value']),
+                ],
+                'changed' => [
+                    'type' => 'changed',
+                    'oldValue' => prepareValue($node['oldValue']),
+                    'newValue' => prepareValue($node['newValue']),
+                ],
+                'nested' => convertToStructured($node['children']),
+                default => prepareValue($node['value']),
+            };
 
-                case 'removed':
-                    $result[$key] = [
-                        'type' => 'removed',
-                        'value' => self::prepareValue($node['value'])
-                    ];
-                    break;
+            return [...$acc, $key => $value];
+        },
+        []
+    );
+}
 
-                case 'changed':
-                    $result[$key] = [
-                        'type' => 'changed',
-                        'oldValue' => self::prepareValue($node['oldValue']),
-                        'newValue' => self::prepareValue($node['newValue'])
-                    ];
-                    break;
+/**
+ * Подготавливает значение для включения в JSON
+ *
+ * @param mixed $value Значение
+ *
+ * @return mixed Подготовленное значение
+ */
+function prepareValue(mixed $value): mixed
+{
+    if (is_object($value)) {
+        $assoc = (array) $value;
 
-                case 'nested':
-                    $result[$key] = self::convertToStructured($node['children']);
-                    break;
-
-                default:
-                    $result[$key] = self::prepareValue($node['value']);
-            }
-        }
-
-        return $result;
+        return array_reduce(
+            array_keys($assoc),
+            function (array $acc, string $key) use ($assoc): array {
+                return [...$acc, $key => prepareValue($assoc[$key])];
+            },
+            []
+        );
     }
 
-    /**
-     * Подготавливает значение для включения в JSON
-     *
-     * @param mixed $value Значение для подготовки
-     *
-     * @return mixed Подготовленное значение
-     */
-    private static function prepareValue($value)
-    {
-        if (is_object($value)) {
-            $result = [];
-            foreach ($value as $k => $v) {
-                $result[$k] = self::prepareValue($v);
-            }
-            return $result;
-        }
-        return $value;
-    }
+    return $value;
 }

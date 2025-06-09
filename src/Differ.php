@@ -62,24 +62,37 @@ function validateFiles(string $path1, string $path2): void
     }
 }
 
+/**
+ * @param object $data1
+ * @param object $data2
+ * @return array
+ */
 function buildDiff(object $data1, object $data2): array
 {
     $data1Array = (array)$data1;
     $data2Array = (array)$data2;
 
     $keys = array_unique(array_merge(array_keys($data1Array), array_keys($data2Array)));
-    sort($keys);
+
+    $sortedKeys = $keys;
+    usort($sortedKeys, fn($a, $b) => $a <=> $b);
 
     return array_map(
-        fn($key) => buildNode($key, $data1, $data2),
-        $keys
+        fn(string $key) => buildNode($key, $data1, $data2),
+        $sortedKeys
     );
 }
 
+/**
+ * @param string $key
+ * @param object $data1
+ * @param object $data2
+ * @return array
+ */
 function buildNode(string $key, object $data1, object $data2): array
 {
-    $value1 = $data1->$key ?? null;
-    $value2 = $data2->$key ?? null;
+    $value1 = property_exists($data1, $key) ? $data1->$key : null;
+    $value2 = property_exists($data2, $key) ? $data2->$key : null;
 
     if (!property_exists($data1, $key)) {
         return [
@@ -129,10 +142,15 @@ function isObject(mixed $value): bool
 function prepareValue(mixed $value): mixed
 {
     if (is_object($value)) {
-        $result = new \stdClass();
-        foreach ($value as $k => $v) {
-            $result->{$k} = prepareValue($v);
-        }
+        $props = (array)$value;
+        $result = array_reduce(
+            array_keys($props),
+            function ($carry, $k) use ($props) {
+                $carry->{$k} = prepareValue($props[$k]);
+                return $carry;
+            },
+            new \stdClass()
+        );
         return $result;
     }
     return $value;
@@ -155,13 +173,16 @@ function formatOutput(array $tree, int $depth = 1): string
     $indentSize = 4;
     $currentIndent = str_repeat(' ', $depth * $indentSize - 2);
     $bracketIndent = str_repeat(' ', ($depth - 1) * $indentSize);
-    $lines = ['{'];
 
-    foreach ($tree as $node) {
-        $lines[] = formatNode($node, $depth);
-    }
+    $lines = array_merge(
+        ['{'],
+        array_map(
+            fn(array $node) => formatNode($node, $depth),
+            $tree
+        ),
+        ["{$bracketIndent}}"]
+    );
 
-    $lines[] = "{$bracketIndent}}";
     return implode("\n", $lines);
 }
 
@@ -171,22 +192,15 @@ function formatNode(array $node, int $depth): string
     $currentIndent = str_repeat(' ', $depth * $indentSize - 2);
     $key = $node['key'];
 
-    switch ($node['type']) {
-        case 'nested':
-            $children = formatOutput($node['children'], $depth + 1);
-            return "{$currentIndent}  {$key}: {$children}";
-        case 'unchanged':
-            return "{$currentIndent}  {$key}: " . formatValue($node['value'], $depth + 1);
-        case 'added':
-            return "{$currentIndent}+ {$key}: " . formatValue($node['value'], $depth + 1);
-        case 'removed':
-            return "{$currentIndent}- {$key}: " . formatValue($node['value'], $depth + 1);
-        case 'changed':
-            return "{$currentIndent}- {$key}: " . formatValue($node['oldValue'], $depth + 1) . "\n"
-                 . "{$currentIndent}+ {$key}: " . formatValue($node['newValue'], $depth + 1);
-        default:
-            throw new \RuntimeException("Unknown node type: {$node['type']}");
-    }
+    return match ($node['type']) {
+        'nested' => "{$currentIndent}  {$key}: " . formatOutput($node['children'], $depth + 1),
+        'unchanged' => "{$currentIndent}  {$key}: " . formatValue($node['value'], $depth + 1),
+        'added' => "{$currentIndent}+ {$key}: " . formatValue($node['value'], $depth + 1),
+        'removed' => "{$currentIndent}- {$key}: " . formatValue($node['value'], $depth + 1),
+        'changed' => "{$currentIndent}- {$key}: " . formatValue($node['oldValue'], $depth + 1) . "\n"
+                   . "{$currentIndent}+ {$key}: " . formatValue($node['newValue'], $depth + 1),
+        default => throw new \RuntimeException("Unknown node type: {$node['type']}"),
+    };
 }
 
 function formatValue(mixed $value, int $depth): string
@@ -198,13 +212,16 @@ function formatValue(mixed $value, int $depth): string
     $indentSize = 4;
     $currentIndent = str_repeat(' ', $depth * $indentSize);
     $bracketIndent = str_repeat(' ', ($depth - 1) * $indentSize);
-    $lines = ['{'];
 
-    foreach ($value as $key => $val) {
-        $lines[] = "{$currentIndent}{$key}: " . formatValue($val, $depth + 1);
-    }
+    $lines = array_merge(
+        ['{'],
+        array_map(
+            fn($key) => "{$currentIndent}{$key}: " . formatValue($value->$key, $depth + 1),
+            array_keys((array)$value)
+        ),
+        ["{$bracketIndent}}"]
+    );
 
-    $lines[] = "{$bracketIndent}}";
     return implode("\n", $lines);
 }
 
