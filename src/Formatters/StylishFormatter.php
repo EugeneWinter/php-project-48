@@ -12,23 +12,23 @@ function formatStylish(array $diff): string
         
         foreach (sortByKey($diff) as $node) {
             switch ($node['type']) {
-                case 'nested':
-                    $children = $iter($node['children'], $depth + 1);
-                    $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
-                    break;
-                case 'changed':
-                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth + 1);
-                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth + 1);
-                    break;
-                case 'added':
-                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], $depth + 1);
-                    break;
-                case 'removed':
-                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], $depth + 1);
-                    break;
-                case 'unchanged':
-                    $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1);
-                    break;
+            case 'nested':
+                $children = $iter($node['children'], $depth + 1);
+                $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
+                break;
+            case 'changed':
+                $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth + 1);
+                $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth + 1);
+                break;
+            case 'added':
+                $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], $depth + 1);
+                break;
+            case 'removed':
+                $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], $depth + 1);
+                break;
+            case 'unchanged':
+                $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1);
+                break;
             }
         }
         

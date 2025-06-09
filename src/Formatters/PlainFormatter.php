@@ -14,15 +14,17 @@ function sortDiffRecursive(array $diff): array
 {
     usort($diff, fn($a, $b) => strcmp($a['key'], $b['key']));
 
-    return array_map(function ($node) {
-        if ($node['type'] === 'nested') {
-            return [
+    return array_map(
+        function ($node) {
+            if ($node['type'] === 'nested') {
+                return [
                 ...$node,
                 'children' => sortDiffRecursive($node['children']),
-            ];
-        }
-        return $node;
-    }, $diff);
+                ];
+            }
+            return $node;
+        }, $diff
+    );
 }
 
 function buildLines(array $diff, string $path = ''): array
@@ -64,7 +66,7 @@ function buildLines(array $diff, string $path = ''): array
                 'unchanged' => $acc,
                 default => $acc,
             };
-          },
+        },
         [] 
     );
 }

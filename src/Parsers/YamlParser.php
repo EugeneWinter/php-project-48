@@ -19,7 +19,7 @@ function parse(string $content): stdClass
         if (trim($content) === '') {
             return new stdClass();
         }
-        
+
         $data = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
         if (!is_object($data)) {
             throw new Exception('YAML must represent an object');
