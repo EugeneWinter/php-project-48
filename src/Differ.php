@@ -66,10 +66,10 @@ function buildDiff(object $data1, object $data2): array
 {
     $data1Array = (array)$data1;
     $data2Array = (array)$data2;
-    
+
     $keys = array_unique(array_merge(array_keys($data1Array), array_keys($data2Array)));
     sort($keys);
-    
+
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
         $keys

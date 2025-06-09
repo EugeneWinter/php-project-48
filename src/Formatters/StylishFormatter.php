@@ -96,13 +96,13 @@ class StylishFormatter
     {
         $order = ['key' => 0, 'ops' => 1, 'doge' => 2];
         $default = 3;
-        
+
         usort($children, function ($a, $b) use ($order, $default) {
             $aValue = $order[$a['key'] ?? $default];
             $bValue = $order[$b['key'] ?? $default];
             return $aValue <=> $bValue;
         });
-        
+
         return $children;
     }
 
