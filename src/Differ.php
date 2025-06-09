@@ -67,13 +67,11 @@ function buildDiff(object $data1, object $data2): array
     $data2Array = (array)$data2;
 
     $keys = array_unique(array_merge(array_keys($data1Array), array_keys($data2Array)));
-
-    $sortedKeys = $keys;
-    usort($sortedKeys, fn($a, $b) => $a <=> $b);
+    sort($keys);
 
     return array_map(
         fn(string $key) => buildNode($key, $data1, $data2),
-        $sortedKeys
+        $keys
     );
 }
 
