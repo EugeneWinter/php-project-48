@@ -12,27 +12,28 @@ function formatStylish(array $diff): string
 
         foreach (sortByKey($diff) as $node) {
             switch ($node['type']) {
-                case 'nested':
-                    $children = $iter($node['children'], $depth + 1);
-                    $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}}";
-                    break;
+            case 'nested':
+                $children = $iter($node['children'], $depth + 1);
+                $indent = str_repeat('    ', $depth);
+                $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}}";
+                break;
 
-                case 'changed':
-                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth + 1);
-                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth + 1);
-                    break;
+            case 'changed':
+                $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth + 1);
+                $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth + 1);
+                break;
 
-                case 'added':
-                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], $depth + 1);
-                    break;
+            case 'added':
+                $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], $depth + 1);
+                break;
 
-                case 'removed':
-                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], $depth + 1);
-                    break;
+            case 'removed':
+                $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], $depth + 1);
+                break;
 
-                case 'unchanged':
-                    $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1);
-                    break;
+            case 'unchanged':
+                $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1);
+                break;
             }
         }
 
@@ -62,10 +63,10 @@ function toString(mixed $value, int $depth = 1): string
     $indent = str_repeat('    ', $depth);
     $bracketIndent = str_repeat('    ', $depth - 1);
 
-    $lines = array_map(
-        fn($key) => sprintf('%s%s: %s', str_repeat('    ', $depth), $key, toString($assoc[$key], $depth + 1)),
-        array_keys($assoc)
-    );
+    $lines = [];
+    foreach ($assoc as $key => $val) {
+        $lines[] = "{$indent}{$key}: " . toString($val, $depth + 1);
+    }
 
     return "{\n" . implode("\n", $lines) . "\n{$bracketIndent}}";
 }
