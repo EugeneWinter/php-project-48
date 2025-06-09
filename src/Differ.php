@@ -155,27 +155,7 @@ function formatOutput(array $diff, int $indent = 2): string
     $lines = ["{"];
     
     foreach ($diff as $node) {
-        if ($node['type'] === 'added') {
-            $lines[] = formatNode($node, $indent);
-        }
-    }
-    
-    foreach ($diff as $node) {
-        if ($node['type'] === 'changed' || $node['type'] === 'nested') {
-            $lines[] = formatNode($node, $indent);
-        }
-    }
-    
-    foreach ($diff as $node) {
-        if ($node['type'] === 'removed') {
-            $lines[] = formatNode($node, $indent);
-        }
-    }
-    
-    foreach ($diff as $node) {
-        if ($node['type'] === 'unchanged') {
-            $lines[] = formatNode($node, $indent);
-        }
+        $lines[] = formatNode($node, $indent);
     }
     
     $lines[] = str_repeat(' ', $indent - 2) . "}";
