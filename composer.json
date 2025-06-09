@@ -22,7 +22,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Differ\\": "src/"
+            "Differ\\": "src/Differ/"
         }
     },
     "autoload-dev": {
