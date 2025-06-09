@@ -53,7 +53,6 @@ function toString(mixed $value, int $depth = 0): string
     }
 
     $indent = str_repeat('    ', $depth);
-    $bracketIndent = str_repeat('    ', $depth - 1);
     $assoc = (array)$value;
     ksort($assoc);
 
@@ -67,6 +66,7 @@ function toString(mixed $value, int $depth = 0): string
         array_keys($assoc)
     );
 
+    $bracketIndent = str_repeat('    ', $depth);
     return "{\n" . implode("\n", $lines) . "\n{$bracketIndent}}";
 }
 
