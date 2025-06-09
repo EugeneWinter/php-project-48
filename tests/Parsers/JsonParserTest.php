@@ -2,9 +2,12 @@
 
 namespace Differ\Tests\Parsers;
 
-use Differ\Parsers\JsonParser;
 use PHPUnit\Framework\TestCase;
 use Exception;
+
+// Импортируем функции вместо класса
+use function Differ\Parsers\JsonParser\parse;
+use function Differ\Parsers\JsonParser\supports;
 
 /**
  * Тесты для JsonParser
@@ -27,7 +30,7 @@ class JsonParserTest extends TestCase
     public function testParseValidJson(): void
     {
         $json = '{"key":"value"}';
-        $result = JsonParser::parse($json);
+        $result = parse($json); // Используем функцию вместо метода класса
 
         $this->assertIsObject($result);
         $this->assertEquals('value', $result->key);
@@ -43,7 +46,7 @@ class JsonParserTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('/JSON parse error/');
 
-        JsonParser::parse('invalid json');
+        parse('invalid json'); // Используем функцию вместо метода класса
     }
 
     /**
@@ -53,8 +56,8 @@ class JsonParserTest extends TestCase
      */
     public function testSupportsJsonFormat(): void
     {
-        $this->assertTrue(JsonParser::supports('json'));
-        $this->assertFalse(JsonParser::supports('yaml'));
-        $this->assertFalse(JsonParser::supports('xml'));
+        $this->assertTrue(supports('json')); // Используем функцию вместо метода класса
+        $this->assertFalse(supports('yaml'));
+        $this->assertFalse(supports('xml'));
     }
 }

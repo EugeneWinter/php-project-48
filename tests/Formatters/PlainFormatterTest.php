@@ -2,8 +2,9 @@
 
 namespace Differ\Tests\Formatters;
 
-use Differ\Formatters\PlainFormatter;
 use PHPUnit\Framework\TestCase;
+
+use function Differ\Formatters\PlainFormatter\formatPlain;
 
 /**
  * Тесты для PlainFormatter
@@ -53,7 +54,7 @@ class PlainFormatterTest extends TestCase
             ]
         ];
 
-        $result = PlainFormatter::format($diff);
+        $result = formatPlain($diff);
         $lines = explode("\n", $result);
 
         $this->assertCount(4, $lines);

@@ -2,26 +2,17 @@
 
 namespace Differ\Tests\Formatters;
 
-use Differ\Formatters\JsonFormatter;
 use PHPUnit\Framework\TestCase;
+
+use function Differ\Formatters\JsonFormatter\formatJson;
 
 /**
  * Тесты для JsonFormatter
- *
- * Проверяет корректность форматирования различий в JSON-формат
- *
- * @category DiffGenerator
- * @package  Tests\Formatters
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
  */
 class JsonFormatterTest extends TestCase
 {
     /**
      * Тестирует форматирование различий в JSON
-     *
-     * @return void
      */
     public function testFormat(): void
     {
@@ -61,16 +52,14 @@ class JsonFormatterTest extends TestCase
 }
 JSON;
 
-        $actual = JsonFormatter::format($diff);
+        $actual = formatJson($diff);
 
         $this->assertJsonStringEqualsJsonString($expected, $actual);
         $this->assertJson($actual);
     }
 
     /**
-     * Проверяет красивое форматирование JSON (с отступами)
-     *
-     * @return void
+     * Проверяет красивое форматирование JSON
      */
     public function testFormatIsPrettyPrinted(): void
     {
@@ -82,7 +71,7 @@ JSON;
             ],
         ];
 
-        $result = JsonFormatter::format($diff);
+        $result = formatJson($diff);
 
         $this->assertStringContainsString("\n", $result);
         $this->assertStringContainsString("    ", $result);
