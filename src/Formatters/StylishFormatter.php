@@ -12,7 +12,7 @@ function formatStylish(array $diff): string
         $indent = str_repeat('    ', $depth);
         $lines = [];
         
-        foreach ($diff as $node) {
+        foreach (sortByKey($diff) as $node) {
             switch ($node['type']) {
                 case 'nested':
                     $children = $iter($node['children'], $depth + 1);
@@ -55,10 +55,19 @@ function toString(mixed $value, int $depth): string
     }
 
     $indent = str_repeat('    ', $depth);
+    $assoc = (array)$value;
+    ksort($assoc);
+
     $props = array_map(
-        fn($key) => "{$indent}    {$key}: " . toString($value->$key, $depth + 1),
-        array_keys((array)$value)
+        fn($key) => "{$indent}    {$key}: " . toString($assoc[$key], $depth + 1),
+        array_keys($assoc)
     );
 
     return "{\n" . implode("\n", $props) . "\n{$indent}}";
+}
+
+function sortByKey(array $nodes): array
+{
+    usort($nodes, fn($a, $b) => strcmp($a['key'], $b['key']));
+    return $nodes;
 }

@@ -2,9 +2,6 @@
 
 namespace Differ\Formatters\JsonFormatter;
 
-/**
- * Форматирует массив различий в JSON строку
- */
 function formatJson(array $diff): string
 {
     $structured = convertToStructuredJson($diff);
@@ -19,7 +16,7 @@ function formatJson(array $diff): string
 
 function convertToStructuredJson(array $diff): array
 {
-    return array_reduce(
+    $result = array_reduce(
         $diff,
         function (array $acc, array $node): array {
             $key = $node['key'];
@@ -43,11 +40,17 @@ function convertToStructuredJson(array $diff): array
                 default => prepareValueJson($node['value']),
             };
 
-            return [...$acc, $key => $value];
+            $acc[$key] = $value;
+            return $acc;
         },
         []
     );
+
+    ksort($result);
+
+    return $result;
 }
+
 
 function prepareValueJson(mixed $value): mixed
 {

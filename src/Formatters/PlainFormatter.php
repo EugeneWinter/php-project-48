@@ -1,71 +1,18 @@
 <?php
 
-/**
- * Форматер для вывода различий в простом текстовом формате (функциональный стиль)
- *
- * @category DiffGenerator
- * @package  Formatters
- * @author   Eugene Winter
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
- */
-
 namespace Differ\Formatters\PlainFormatter;
 
-/**
- * Форматирует массив различий в простой текст
- *
- * @param array $diff Массив различий
- *
- * @return string Текстовое представление различий
- */
 function formatPlain(array $diff): string
 {
     $sortedDiff = sortDiff($diff);
     $lines = buildLines($sortedDiff);
     return implode("\n", $lines);
 }
-
-/**
- * Сортирует массив diff по ключу с учётом специального порядка
- *
- * @param array $diff
- * @return array
- */
 function sortDiff(array $diff): array
 {
-    $order = ['doge', 'ops'];
-
-    $compare = function (array $a, array $b) use ($order): int {
-        $posA = array_search($a['key'], $order, true);
-        $posB = array_search($b['key'], $order, true);
-
-        if ($posA !== false && $posB !== false) {
-            return $posA <=> $posB;
-        }
-        if ($posA !== false) {
-            return -1;
-        }
-        if ($posB !== false) {
-            return 1;
-        }
-        return strcmp($a['key'], $b['key']);
-    };
-
-    $copy = $diff;
-    uasort($copy, $compare);
-
-    return array_values($copy);
+    usort($diff, fn($a, $b) => strcmp($a['key'], $b['key']));
+    return $diff;
 }
-
-/**
- * Рекурсивно строит массив строк для вывода различий
- *
- * @param array $diff Массив различий
- * @param string $path Текущий путь (для рекурсии)
- *
- * @return array Массив строк
- */
 function buildLines(array $diff, string $path = ''): array
 {
     return array_reduce(
@@ -109,14 +56,6 @@ function buildLines(array $diff, string $path = ''): array
         []
     );
 }
-
-/**
- * Преобразует значение в строку для вывода
- *
- * @param mixed $value
- *
- * @return string
- */
 function stringifyValue(mixed $value): string
 {
     if (is_object($value) || is_array($value)) {
