@@ -4,15 +4,27 @@ namespace Differ\Formatters\PlainFormatter;
 
 function formatPlain(array $diff): string
 {
-    $sortedDiff = sortDiff($diff);
+    $sortedDiff = sortDiffRecursive($diff);
     $lines = buildLines($sortedDiff);
+    sort($lines);
     return implode("\n", $lines);
 }
-function sortDiff(array $diff): array
+
+function sortDiffRecursive(array $diff): array
 {
     usort($diff, fn($a, $b) => strcmp($a['key'], $b['key']));
-    return $diff;
+
+    return array_map(function ($node) {
+        if ($node['type'] === 'nested') {
+            return [
+                ...$node,
+                'children' => sortDiffRecursive($node['children']),
+            ];
+        }
+        return $node;
+    }, $diff);
 }
+
 function buildLines(array $diff, string $path = ''): array
 {
     return array_reduce(
@@ -53,9 +65,9 @@ function buildLines(array $diff, string $path = ''): array
                 default => $acc,
             };
         },
-        []
     );
 }
+
 function stringifyValue(mixed $value): string
 {
     if (is_object($value) || is_array($value)) {

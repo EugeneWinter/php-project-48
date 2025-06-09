@@ -56,13 +56,11 @@ function prepareValueJson(mixed $value): mixed
 {
     if (is_object($value)) {
         $assoc = (array) $value;
+        ksort($assoc);
 
-        return array_reduce(
-            array_keys($assoc),
-            function (array $acc, string $key) use ($assoc): array {
-                return [...$acc, $key => prepareValueJson($assoc[$key])];
-            },
-            []
+        return array_map(
+            fn($v) => prepareValueJson($v),
+            $assoc
         );
     }
 
