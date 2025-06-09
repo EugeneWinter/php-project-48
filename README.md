@@ -81,4 +81,3 @@ composer lint    # Проверка стиля кода
 - SonarCloud - контроль качества кода
 - PHPUnit - тестирование
 - PHP CodeSniffer - проверка стиля
-
