@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Differ\Parsers\ParserFactory;
+namespace Differ\Parsers;
 
 use Exception;
 
@@ -29,11 +29,11 @@ function getParsers(): array
     return [
         [
             'supports' => supportsJson(...),
-            'parse'    => parseJson(...),
+            'parse' => parseJson(...),
         ],
         [
             'supports' => supportsYaml(...),
-            'parse'    => parseYaml(...),
+            'parse' => parseYaml(...),
         ],
     ];
 }

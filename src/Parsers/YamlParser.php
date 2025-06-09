@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Differ\Parsers\YamlParser;
 
-use Symfony\Component\Yaml\Yaml;
 use Exception;
+use Symfony\Component\Yaml\Yaml;
+use stdClass;
 
 function supports(string $format): bool
 {
     return in_array($format, ['yaml', 'yml'], true);
 }
 
-function parse(string $content): object
+function parse(string $content): stdClass
 {
     try {
-        $result = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
-        return $result ?? new \stdClass();
+        $data = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
+        if (!is_object($data)) {
+            throw new Exception('YAML must represent an object');
+        }
+        return $data;
     } catch (Exception $e) {
-        throw new Exception(
-            sprintf('YAML parse error: %s', $e->getMessage())
-        );
+        throw new Exception("YAML parse error: {$e->getMessage()}");
     }
 }
