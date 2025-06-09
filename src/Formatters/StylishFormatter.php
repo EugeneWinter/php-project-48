@@ -57,18 +57,16 @@ function toString(mixed $value, int $depth = 0, bool $isValue = false): string
     ksort($assoc);
 
     $lines = array_map(
-        function ($key) use ($assoc, $depth, $isValue) {
+        function ($key) use ($assoc, $depth) {
             $formattedValue = is_object($assoc[$key])
-                ? toString($assoc[$key], $isValue ? $depth : $depth + 1, $isValue)
-                : toString($assoc[$key], $depth, $isValue);
-            $indent = str_repeat('    ', $depth);
-            return "{$indent}    {$key}: {$formattedValue}";
+                ? toString($assoc[$key], $depth + 1)
+                : toString($assoc[$key], $depth);
+            return "    {$key}: {$formattedValue}";
         },
         array_keys($assoc)
     );
 
-    $bracketIndent = str_repeat('    ', $depth);
-    return "{\n" . implode("\n", $lines) . "\n{$bracketIndent}}";
+    return "{\n" . implode("\n", $lines) . "\n{$indent}}";
 }
 
 function sortByKey(array $nodes): array
