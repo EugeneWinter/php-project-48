@@ -57,13 +57,12 @@ function toString(mixed $value, int $depth = 1): string
     $assoc = is_object($value) ? (array)$value : $value;
 
     $indent = str_repeat('    ', $depth);
-    $bracketIndent = str_repeat('    ', $depth - 1);
+    $bracketIndent = str_repeat('    ', max($depth - 1, 0));
     ksort($assoc);
 
     $lines = array_map(
-        function ($key) use ($assoc, $depth, $indent) {
-            $formattedValue = toString($assoc[$key], $depth + 1);
-            return "{$indent}{$key}: {$formattedValue}";
+        function ($key) use ($assoc, $depth) {
+            return sprintf('%s%s: %s', str_repeat('    ', $depth), $key, toString($assoc[$key], $depth + 1));
         },
         array_keys($assoc)
     );
