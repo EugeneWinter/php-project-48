@@ -11,13 +11,6 @@ use function Differ\Parsers\JsonParser\supports as supportsJson;
 use function Differ\Parsers\YamlParser\parse as parseYaml;
 use function Differ\Parsers\YamlParser\supports as supportsYaml;
 
-/**
- * Определяет формат файла по расширению
- *
- * @param string $filePath
- * @return string
- * @throws Exception
- */
 function getFormat(string $filePath): string
 {
     $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
@@ -31,11 +24,6 @@ function getFormat(string $filePath): string
     };
 }
 
-/**
- * Возвращает список доступных парсеров
- *
- * @return list<array{supports: callable(string): bool, parse: callable(string): object}>
- */
 function getParsers(): array
 {
     return [
@@ -50,14 +38,6 @@ function getParsers(): array
     ];
 }
 
-/**
- * Парсит содержимое с помощью подходящего парсера
- *
- * @param string $content
- * @param string $format
- * @return object
- * @throws Exception
- */
 function parse(string $content, string $format): object
 {
     $parsers = getParsers();
