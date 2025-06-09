@@ -77,7 +77,7 @@ class StylishFormatter
                     self::buildTree($children, $depth + 1)
                 );
 
-            default: // unchanged
+            default:
                 return sprintf(
                     "%s    %s: %s",
                     $indent,

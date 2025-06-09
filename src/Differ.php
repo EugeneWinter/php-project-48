@@ -67,19 +67,15 @@ function buildDiff(object $data1, object $data2): array
     $data1Array = (array)$data1;
     $data2Array = (array)$data2;
     
-    $keys = array_keys($data1Array);
-    
-    foreach (array_keys($data2Array) as $key) {
-        if (!in_array($key, $keys)) {
-            $keys[] = $key;
-        }
-    }
+    $keys = array_unique(array_merge(array_keys($data1Array), array_keys($data2Array)));
+    sort($keys);
     
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
         $keys
     );
 }
+
 function buildNode(string $key, object $data1, object $data2): array
 {
     $value1 = $data1->$key ?? null;
@@ -157,9 +153,31 @@ function formatDiff(array $diff, string $format): string
 function formatOutput(array $diff, int $indent = 2): string
 {
     $lines = ["{"];
+    
     foreach ($diff as $node) {
-        $lines[] = formatNode($node, $indent);
+        if ($node['type'] === 'added') {
+            $lines[] = formatNode($node, $indent);
+        }
     }
+    
+    foreach ($diff as $node) {
+        if ($node['type'] === 'changed' || $node['type'] === 'nested') {
+            $lines[] = formatNode($node, $indent);
+        }
+    }
+    
+    foreach ($diff as $node) {
+        if ($node['type'] === 'removed') {
+            $lines[] = formatNode($node, $indent);
+        }
+    }
+    
+    foreach ($diff as $node) {
+        if ($node['type'] === 'unchanged') {
+            $lines[] = formatNode($node, $indent);
+        }
+    }
+    
     $lines[] = str_repeat(' ', $indent - 2) . "}";
     return implode("\n", $lines);
 }
@@ -199,8 +217,8 @@ function formatValue(mixed $value, int $indent): string
         return implode("\n", $lines);
     }
 
-    if (is_string($value)) {
-        return $value === '' ? $value : $value;
+    if ($value === '') {
+        return '';
     }
 
     if (is_bool($value)) {
