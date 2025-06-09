@@ -150,62 +150,69 @@ function formatDiff(array $diff, string $format): string
     };
 }
 
-function formatOutput(array $tree, int $indent = 2): string
+function formatOutput(array $tree, int $depth = 1): string
 {
+    $indentSize = 4;
+    $currentIndent = str_repeat(' ', $depth * $indentSize - 2);
+    $bracketIndent = str_repeat(' ', ($depth - 1) * $indentSize);
     $lines = ['{'];
 
     foreach ($tree as $node) {
-        $lines[] = formatNode($node, $indent);
+        $lines[] = formatNode($node, $depth);
     }
 
-    $lines[] = str_repeat(' ', $indent - 2) . '}';
-
+    $lines[] = "{$bracketIndent}}";
     return implode("\n", $lines);
 }
 
-function formatNode(array $node, int $indent): string
+function formatNode(array $node, int $depth): string
 {
-    $spaces = str_repeat(' ', $indent);
+    $indentSize = 4;
+    $currentIndent = str_repeat(' ', $depth * $indentSize - 2);
     $key = $node['key'];
 
     switch ($node['type']) {
         case 'nested':
-            $children = formatOutput($node['children'], $indent + 4);
-            return "{$spaces}  {$key}: " . ltrim($children);
+            $children = formatOutput($node['children'], $depth + 1);
+            return "{$currentIndent}  {$key}: {$children}";
         case 'unchanged':
-            return "{$spaces}  {$key}: " . formatValue($node['value'], $indent);
+            return "{$currentIndent}  {$key}: " . formatValue($node['value'], $depth + 1);
         case 'added':
-            return "{$spaces}+ {$key}: " . formatValue($node['value'], $indent);
+            return "{$currentIndent}+ {$key}: " . formatValue($node['value'], $depth + 1);
         case 'removed':
-            return "{$spaces}- {$key}: " . formatValue($node['value'], $indent);
+            return "{$currentIndent}- {$key}: " . formatValue($node['value'], $depth + 1);
         case 'changed':
-            return "{$spaces}- {$key}: " . formatValue($node['oldValue'], $indent) . "\n"
-                 . "{$spaces}+ {$key}: " . formatValue($node['newValue'], $indent);
+            return "{$currentIndent}- {$key}: " . formatValue($node['oldValue'], $depth + 1) . "\n"
+                 . "{$currentIndent}+ {$key}: " . formatValue($node['newValue'], $depth + 1);
         default:
             throw new \RuntimeException("Unknown node type: {$node['type']}");
     }
 }
 
-function formatValue(mixed $value, int $indent): string
+function formatValue(mixed $value, int $depth): string
 {
-    if (is_object($value)) {
-        $lines = ['{'];
-        foreach ($value as $k => $v) {
-            $childIndent = $indent + 4;
-            $spaces = str_repeat(' ', $childIndent);
-            $lines[] = "{$spaces}{$k}: " . formatValue($v, $childIndent);
-        }
-        $lines[] = str_repeat(' ', $indent) . '}';
-        return implode("\n", $lines);
+    if (!is_object($value)) {
+        return formatPrimitive($value);
     }
 
-    if (is_bool($value)) {
-        return $value ? 'true' : 'false';
+    $indentSize = 4;
+    $currentIndent = str_repeat(' ', $depth * $indentSize);
+    $bracketIndent = str_repeat(' ', ($depth - 1) * $indentSize);
+    $lines = ['{'];
+
+    foreach ($value as $key => $val) {
+        $lines[] = "{$currentIndent}{$key}: " . formatValue($val, $depth + 1);
     }
 
-    if ($value === null) {
-        return 'null';
-    }
+    $lines[] = "{$bracketIndent}}";
+    return implode("\n", $lines);
+}
 
-    return (string) $value;
+function formatPrimitive(mixed $value): string
+{
+    return match (true) {
+        is_bool($value) => $value ? 'true' : 'false',
+        $value === null => 'null',
+        default => (string) $value,
+    };
 }
