@@ -10,7 +10,7 @@ function formatStylish(array $diff): string
         $indent = str_repeat('    ', $depth);
         $lines = [];
 
-        foreach (sortByKey($diff) as $node) {
+        foreach ($diff as $node) {
             switch ($node['type']) {
                 case 'nested':
                     $children = $iter($node['children'], $depth + 1);
