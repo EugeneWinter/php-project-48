@@ -11,25 +11,24 @@ function formatStylish(array $diff): string
         $lines = [];
 
         foreach (sortByKey($diff) as $node) {
-        switch ($node['type']) {
-        case 'nested':
-            $children = $iter($node['children'], $depth + 1);
-            $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
-            break;
-        case 'changed':
-            $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], 0);
-            $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], 0);
-            break;
-        case 'added':
-            $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], 0);
-            break;
-        case 'removed':
-            $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], 0);
-            break;
-        case 'unchanged':
-            $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1);
-            break;
-
+            switch ($node['type']) {
+                case 'nested':
+                    $children = $iter($node['children'], $depth + 1);
+                    $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
+                    break;
+                case 'changed':
+                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth + 1, true);
+                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth + 1, true);
+                    break;
+                case 'added':
+                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], $depth + 1, true);
+                    break;
+                case 'removed':
+                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], $depth + 1, true);
+                    break;
+                case 'unchanged':
+                    $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1, true);
+                    break;
             }
         }
 
@@ -39,7 +38,7 @@ function formatStylish(array $diff): string
     return "{\n" . $iter($diff, 0) . "\n}";
 }
 
-function toString(mixed $value, int $depth = 0): string
+function toString(mixed $value, int $depth = 0, bool $isValue = false): string
 {
     if (is_bool($value)) {
         return $value ? 'true' : 'false';
@@ -58,10 +57,11 @@ function toString(mixed $value, int $depth = 0): string
     ksort($assoc);
 
     $lines = array_map(
-        function ($key) use ($assoc, $depth, $indent) {
+        function ($key) use ($assoc, $depth, $isValue) {
             $formattedValue = is_object($assoc[$key])
-                ? toString($assoc[$key], $depth + 1)
-                : toString($assoc[$key], $depth);
+                ? toString($assoc[$key], $isValue ? $depth : $depth + 1, $isValue)
+                : toString($assoc[$key], $depth, $isValue);
+            $indent = str_repeat('    ', $depth);
             return "{$indent}    {$key}: {$formattedValue}";
         },
         array_keys($assoc)
