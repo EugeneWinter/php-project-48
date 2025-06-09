@@ -66,4 +66,3 @@ function prepareValueJson(mixed $value): mixed
 
     return $value;
 }
-

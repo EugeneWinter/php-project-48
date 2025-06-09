@@ -23,7 +23,8 @@ function sortDiffRecursive(array $diff): array
                 ];
             }
             return $node;
-        }, $diff
+        }, 
+        $diff            
     );
 }
 
@@ -67,7 +68,7 @@ function buildLines(array $diff, string $path = ''): array
                 default => $acc,
             };
         },
-        [] 
+        []
     );
 }
 
