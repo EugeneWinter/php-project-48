@@ -10,31 +10,31 @@ function formatStylish(array $diff): string
 {
     $iter = function ($diff, $depth) use (&$iter) {
         $indent = str_repeat('    ', $depth);
-        $lines = array_map(function ($node) use ($iter, $depth, $indent) {
+        $lines = [];
+        
+        foreach ($diff as $node) {
             switch ($node['type']) {
-                case 'added':
-                    return "{$indent}  + {$node['key']}: " . toString($node['value'], $depth + 1);
-                case 'removed':
-                    return "{$indent}  - {$node['key']}: " . toString($node['value'], $depth + 1);
-                case 'unchanged':
-                    return "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1);
-                case 'changed':
-                    return [
-                        "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth + 1),
-                        "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth + 1)
-                    ];
                 case 'nested':
                     $children = $iter($node['children'], $depth + 1);
-                    return "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
-                default:
-                    throw new Exception("Unknown node type: {$node['type']}");
+                    $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
+                    break;
+                case 'changed':
+                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth + 1);
+                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth + 1);
+                    break;
+                case 'added':
+                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], $depth + 1);
+                    break;
+                case 'removed':
+                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], $depth + 1);
+                    break;
+                case 'unchanged':
+                    $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth + 1);
+                    break;
             }
-        }, $diff);
-
-        return implode("\n", array_merge(...array_map(
-            fn($line) => is_array($line) ? $line : [$line],
-            $lines
-        )));
+        }
+        
+        return implode("\n", $lines);
     };
 
     return "{\n" . $iter($diff, 0) . "\n}";
