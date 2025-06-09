@@ -29,41 +29,46 @@ class StylishFormatter
 
     private static function renderNode(array $node, int $depth): string
     {
-        $indent = str_repeat(' ', $depth * self::INDENT_SIZE);
+        $indentSize = $depth * self::INDENT_SIZE - 2;
+        $indent = str_repeat(' ', $indentSize);
         $key = $node['key'];
         $type = $node['type'];
 
         switch ($type) {
             case 'added':
                 return sprintf(
-                    "%s  %s %s: %s",
+                    "%s%s %s: %s",
                     $indent,
                     self::ADDED_SIGN,
                     $key,
-                    self::stringify($node['value'], $depth + 1)
+                    self::stringify($node['value'], $depth)
                 );
 
             case 'removed':
                 return sprintf(
-                    "%s  %s %s: %s",
+                    "%s%s %s: %s",
                     $indent,
                     self::REMOVED_SIGN,
                     $key,
-                    self::stringify($node['value'], $depth + 1)
+                    self::stringify($node['value'], $depth)
                 );
 
             case 'changed':
-                return sprintf(
-                    "%s  %s %s: %s\n%s  %s %s: %s",
+                $oldLine = sprintf(
+                    "%s%s %s: %s",
                     $indent,
                     self::REMOVED_SIGN,
                     $key,
-                    self::stringify($node['oldValue'], $depth + 1),
+                    self::stringify($node['oldValue'], $depth)
+                );
+                $newLine = sprintf(
+                    "%s%s %s: %s",
                     $indent,
                     self::ADDED_SIGN,
                     $key,
-                    self::stringify($node['newValue'], $depth + 1)
+                    self::stringify($node['newValue'], $depth)
                 );
+                return $oldLine . "\n" . $newLine;
 
             case 'nested':
                 $children = $node['children'];
@@ -71,7 +76,7 @@ class StylishFormatter
                     $children = self::sortSetting6Children($children);
                 }
                 return sprintf(
-                    "%s    %s: %s",
+                    "%s  %s: %s",
                     $indent,
                     $key,
                     self::buildTree($children, $depth + 1)
@@ -79,10 +84,10 @@ class StylishFormatter
 
             default:
                 return sprintf(
-                    "%s    %s: %s",
+                    "%s  %s: %s",
                     $indent,
                     $key,
-                    self::stringify($node['value'], $depth + 1)
+                    self::stringify($node['value'], $depth)
                 );
         }
     }
@@ -116,7 +121,9 @@ class StylishFormatter
         }
 
         $value = (array)$value;
-        $indent = str_repeat(' ', ($depth + 1) * self::INDENT_SIZE);
+        $indentSize = ($depth + 1) * self::INDENT_SIZE;
+        $indent = str_repeat(' ', $indentSize);
+        $closingIndent = str_repeat(' ', $depth * self::INDENT_SIZE);
         $lines = [];
 
         foreach ($value as $key => $val) {
@@ -128,6 +135,6 @@ class StylishFormatter
             );
         }
 
-        return "{\n" . implode("\n", $lines) . "\n" . str_repeat(' ', $depth * self::INDENT_SIZE) . "}";
+        return "{\n" . implode("\n", $lines) . "\n" . $closingIndent . "}";
     }
 }
