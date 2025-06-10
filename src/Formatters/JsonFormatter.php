@@ -1,4 +1,4 @@
-<?phpMore actions
+<?php
 
 namespace Differ\Formatters\JsonFormatter;
 
