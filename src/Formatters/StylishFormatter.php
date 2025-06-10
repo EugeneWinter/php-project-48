@@ -1,47 +1,52 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Differ\Formatters\StylishFormatter;
 
-use Exception;
-
-function formatStylish(array $diff): string
+function formatStylish(array $diff, int $depth = 0): string
 {
-    $iter = function ($diff, $depth) use (&$iter) {
+    $lines = array_map(function ($node) use ($depth) {
         $indent = str_repeat('    ', $depth);
-        $lines = [];
+        $key = $node['key'];
         
-        foreach (sortByKey($diff) as $node) {
-            switch ($node['type']) {
-                case 'nested':
-                    $children = $iter($node['children'], $depth + 1);
-                    $lines[] = "{$indent}    {$node['key']}: {\n{$children}\n{$indent}    }";
-                    break;
-                case 'changed':
-                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['oldValue'], $depth);
-                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['newValue'], $depth);
-                    break;
-                case 'added':
-                    $lines[] = "{$indent}  + {$node['key']}: " . toString($node['value'], $depth);
-                    break;
-                case 'removed':
-                    $lines[] = "{$indent}  - {$node['key']}: " . toString($node['value'], $depth);
-                    break;
-                case 'unchanged':
-                    $lines[] = "{$indent}    {$node['key']}: " . toString($node['value'], $depth);
-                    break;
-            }
+        switch ($node['type']) {
+            case 'nested':
+                $children = formatStylish($node['children'], $depth + 1);
+                return "{$indent}    {$key}: {\n{$children}\n{$indent}    }";
+            
+            case 'added':
+                $value = stringify($node['value'], $depth + 1);
+                return "{$indent}  + {$key}: {$value}";
+            
+            case 'removed':
+                $value = stringify($node['value'], $depth + 1);
+                return "{$indent}  - {$key}: {$value}";
+            
+            case 'changed':
+                $oldValue = stringify($node['oldValue'], $depth + 1);
+                $newValue = stringify($node['newValue'], $depth + 1);
+                return "{$indent}  - {$key}: {$oldValue}\n{$indent}  + {$key}: {$newValue}";
+            
+            case 'unchanged':
+                $value = stringify($node['value'], $depth + 1);
+                return "{$indent}    {$key}: {$value}";
         }
-        
-        return implode("\n", $lines);
-    };
+    }, $diff);
 
-    return "{\n" . $iter($diff, 0) . "\n}";
+    return implode("\n", $lines);
 }
 
-function toString(mixed $value, int $depth = 1): string
+function stringify(mixed $value, int $depth): string
 {
+    if (is_object($value)) {
+        $props = (array)$value;
+        $indent = str_repeat('    ', $depth);
+        $lines = array_map(
+            fn($key) => "{$indent}    {$key}: " . stringify($props[$key], $depth + 1),
+            array_keys($props)
+        );
+        return "{\n" . implode("\n", $lines) . "\n{$indent}}";
+    }
+
     if (is_bool($value)) {
         return $value ? 'true' : 'false';
     }
@@ -50,28 +55,5 @@ function toString(mixed $value, int $depth = 1): string
         return 'null';
     }
 
-    if (!is_array($value) && !is_object($value)) {
-        return (string)$value;
-    }
-
-    $assoc = is_object($value) ? (array)$value : $value;
-
-    $indent = str_repeat('    ', $depth);
-    $bracketIndent = str_repeat('    ', max($depth - 1, 0));
-    ksort($assoc);
-
-    $lines = array_map(
-        function ($key) use ($assoc, $depth) {
-            return sprintf('%s%s: %s', str_repeat('    ', $depth), $key, toString($assoc[$key], $depth + 1));
-        },
-        array_keys($assoc)
-    );
-
-    return "{\n" . implode("\n", $lines) . "\n{$bracketIndent}}";
-}
-
-function sortByKey(array $nodes): array
-{
-    usort($nodes, fn($a, $b) => strcmp($a['key'], $b['key']));
-    return $nodes;
+    return (string)$value;
 }
