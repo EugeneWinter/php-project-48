@@ -149,15 +149,17 @@ function isObject($value): bool
  * @param mixed $value
  * @return mixed
  */
-
 function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
         $result = new stdClass();
-        foreach (array_keys($props) as $k) {
-            $result->$k = prepareValue($props[$k]);
-        }
+        array_map(
+            function ($k) use ($props, &$result) {
+                $result->$k = prepareValue($props[$k]);
+            },
+            array_keys($props)
+        );
         return $result;
     }
     return $value;
@@ -169,8 +171,9 @@ function prepareValue($value)
  */
 function sortKeys(array $keys): array
 {
-    usort($keys, fn($a, $b) => strnatcmp($a, $b));
-    return $keys;
+    $sortedKeys = $keys;
+    natcasesort($sortedKeys);
+    return array_values($sortedKeys);
 }
 
 /**
