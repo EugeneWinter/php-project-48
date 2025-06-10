@@ -153,11 +153,14 @@ function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
-        $result = new stdClass();
-        foreach ($props as $k => $v) {
-            $result->$k = prepareValue($v);
-        }
-        return $result;
+        return array_reduce(
+            array_keys($props),
+            function ($result, $k) use ($props) {
+                $result->$k = prepareValue($props[$k]);
+                return $result;
+            },
+            new stdClass()
+        );
     }
     return $value;
 }
@@ -169,7 +172,7 @@ function prepareValue($value)
 function sortKeys(array $keys): array
 {
     $sorted = $keys;
-    sort($sorted);
+    natsort($sorted);
     return $sorted;
 }
 
