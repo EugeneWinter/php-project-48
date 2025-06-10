@@ -43,7 +43,7 @@ TEXT;
             __DIR__ . '/fixtures/file2.json'
         );
 
-        $this->assertEquals(trim($expected), trim($actual));
+        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -69,7 +69,7 @@ TEXT;
             __DIR__ . '/fixtures/file2.yaml'
         );
 
-        $this->assertEquals(trim($expected), trim($actual));
+        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -89,8 +89,8 @@ TEXT;
       + setting3: null
       + setting4: blah blah
       + setting5: {
-    key5: value5
-}
+            key5: value5
+        }
         setting6: {
             doge: {
               - wow: 
@@ -108,7 +108,7 @@ TEXT;
             __DIR__ . '/fixtures/nested2.json'
         );
 
-        $this->assertEquals(trim($expected), trim($actual));
+        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -128,8 +128,8 @@ TEXT;
       + setting3: null
       + setting4: blah blah
       + setting5: {
-    key5: value5
-}
+            key5: value5
+        }
         setting6: {
             doge: {
               - wow: 
@@ -147,7 +147,7 @@ TEXT;
             __DIR__ . '/fixtures/nested2.yaml'
         );
 
-        $this->assertEquals(trim($expected), trim($actual));
+        $this->assertEquals($expected, $actual);
     }
 
     /**
