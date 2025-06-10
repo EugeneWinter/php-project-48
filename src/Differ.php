@@ -14,6 +14,8 @@ use function Differ\Formatters\StylishFormatter\formatStylish;
 
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
+    validateFiles($path1, $path2);
+
     $content1 = file_get_contents($path1);
     $content2 = file_get_contents($path2);
 
@@ -83,12 +85,12 @@ function buildDiff(object $data1, object $data2): array
 
     $sortedKeys = sortKeys($filteredKeys);
 
-    $result = array_map(
+    $nodes = array_map(
         fn(string $key) => buildNode($key, $data1, $data2),
         $sortedKeys
     );
 
-    return array_values($result);
+    return array_values($nodes);
 }
 
 /**
