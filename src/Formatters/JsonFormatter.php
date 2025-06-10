@@ -131,9 +131,9 @@ function merge(array $left, array $right, callable $comparator): array
                 $right,
                 fn($rightItem) => $comparator($rightItem, $leftItem) < 0
             );
-            
+
             $remainingRight = array_diff_key($right, array_flip(array_keys($rightItems)));
-            
+
             return [
                 'result' => [...$acc['result'], ...$rightItems, $leftItem],
                 'remainingRight' => $remainingRight
