@@ -6,26 +6,40 @@ function formatPlain(array $diff): string
 {
     $sortedDiff = sortDiffRecursive($diff);
     $lines = buildLines($sortedDiff);
-    sort($lines);
-    return implode("\n", $lines);
+    $sortedLines = array_sort($lines);
+    return implode("\n", $sortedLines);
 }
 
 function sortDiffRecursive(array $diff): array
 {
-    usort($diff, fn($a, $b) => strcmp($a['key'], $b['key']));
+    $sorted = array_sort(
+        $diff,
+        fn($a, $b) => strcmp($a['key'], $b['key'])
+    );
 
     return array_map(
         function ($node) {
             if ($node['type'] === 'nested') {
                 return [
-                ...$node,
-                'children' => sortDiffRecursive($node['children']),
+                    ...$node,
+                    'children' => sortDiffRecursive($node['children']),
                 ];
             }
             return $node;
         },
-        $diff
+        $sorted
     );
+}
+
+function array_sort(array $array, ?callable $callback = null): array
+{
+    $sorted = $array;
+    if ($callback) {
+        uasort($sorted, $callback);
+    } else {
+        asort($sorted);
+    }
+    return $sorted;
 }
 
 function buildLines(array $diff, string $path = ''): array
