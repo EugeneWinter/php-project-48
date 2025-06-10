@@ -70,7 +70,7 @@ function buildDiff(object $data1, object $data2): array
     $keys = array_unique(array_merge(
         array_keys($data1Array),
         array_keys($data2Array)
-    );
+    ));
 
     usort($keys, fn($a, $b) => strcmp($a, $b));
 
