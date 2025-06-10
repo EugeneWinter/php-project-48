@@ -2,14 +2,14 @@
 
 namespace Differ\Differ;
 
+use RuntimeException;
+use Exception;
+
 use function Differ\Parsers\getFormat;
 use function Differ\Parsers\parse;
 use function Differ\Formatters\JsonFormatter\formatJson;
 use function Differ\Formatters\PlainFormatter\formatPlain;
 use function Differ\Formatters\StylishFormatter\formatStylish;
-
-use RuntimeException;
-use Exception;
 
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
