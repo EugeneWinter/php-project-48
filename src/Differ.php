@@ -1,4 +1,3 @@
-@@ -1,186 +1,205 @@
 <?php
 
 namespace Differ\Differ;
