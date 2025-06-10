@@ -77,7 +77,7 @@ function sortAssocArray(array $array): array
 {
     $keys = array_keys($array);
     $sortedKeys = mergeSort($keys, fn($a, $b) => strcmp((string)$a, (string)$b));
-    
+
     return array_combine($sortedKeys, array_map(
         fn($key) => $array[$key],
         $sortedKeys
