@@ -83,13 +83,26 @@ function prepareValueJson(mixed $value)
 function sortAssocArray(array $array): array
 {
     $keys = array_keys($array);
-    usort($keys, fn($a, $b) => strcmp((string)$a, (string)$b));
+    $sortedKeys = array_sort_by($keys, fn($key) => (string)$key);
 
     return array_reduce(
-        $keys,
+        $sortedKeys,
         function (array $acc, $key) use ($array): array {
             return [...$acc, $key => $array[$key]];
         },
         []
     );
+}
+
+/**
+ * @template T
+ * @param array<T> $array
+ * @param callable(T): mixed $callback
+ * @return array<T>
+ */
+function array_sort_by(array $array, callable $callback): array
+{
+    $sorted = $array;
+    usort($sorted, fn($a, $b) => strcmp($callback($a), $callback($b)));
+    return $sorted;
 }
