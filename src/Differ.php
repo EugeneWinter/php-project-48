@@ -80,10 +80,14 @@ function buildDiff(object $data1, object $data2): array
 
     $sortedKeys = sortKeys($keys);
 
-    return array_values(array_map(
-        fn(string $key): array => buildNode($key, $data1, $data2),
-        $sortedKeys
-    ));
+    return array_reduce(
+        $sortedKeys,
+        function ($carry, $key) use ($data1, $data2) {
+            $carry[] = buildNode($key, $data1, $data2);
+            return $carry;
+        },
+        []
+    );
 }
 
 /**
@@ -153,11 +157,14 @@ function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
-        $result = new stdClass();
-        foreach (array_keys($props) as $k) {
-            $result->$k = prepareValue($props[$k]);
-        }
-        return $result;
+        return array_reduce(
+            array_keys($props),
+            function ($carry, $k) use ($props) {
+                $carry->$k = prepareValue($props[$k]);
+                return $carry;
+            },
+            new stdClass()
+        );
     }
     return $value;
 }
@@ -168,9 +175,27 @@ function prepareValue($value)
  */
 function sortKeys(array $keys): array
 {
-    $sortedKeys = $keys;
-    usort($sortedKeys, fn($a, $b) => strcasecmp($a, $b));
-    return $sortedKeys;
+    if (count($keys) <= 1) {
+        return $keys;
+    }
+
+    $pivot = $keys[0];
+    $left = [];
+    $right = [];
+
+    for ($i = 1; $i < count($keys); $i++) {
+        if (strcasecmp($keys[$i], $pivot) < 0) {
+            $left[] = $keys[$i];
+        } else {
+            $right[] = $keys[$i];
+        }
+    }
+
+    return array_merge(
+        sortKeys($left),
+        [$pivot],
+        sortKeys($right)
+    );
 }
 
 /**
