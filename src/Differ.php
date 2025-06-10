@@ -78,12 +78,18 @@ function buildDiff(object $data1, object $data2): array
         array_keys($data2Array)
     ));
 
-    $sortedKeys = sortKeys($keys);
+    // Фильтрация null-ключей и приведение к string
+    $filteredKeys = array_filter(array_map('strval', $keys), fn($key) => $key !== '');
+
+    $sortedKeys = sortKeys($filteredKeys);
 
     return array_reduce(
         $sortedKeys,
-        function ($carry, $key) use ($data1, $data2) {
-            $carry[] = buildNode($key, $data1, $data2);
+        function ($carry, string $key) use ($data1, $data2) {
+            $node = buildNode($key, $data1, $data2);
+            if ($node !== null) {
+                $carry[] = $node;
+            }
             return $carry;
         },
         []
@@ -180,16 +186,8 @@ function sortKeys(array $keys): array
     }
 
     $pivot = $keys[0];
-    $left = [];
-    $right = [];
-
-    for ($i = 1; $i < count($keys); $i++) {
-        if (strcasecmp($keys[$i], $pivot) < 0) {
-            $left[] = $keys[$i];
-        } else {
-            $right[] = $keys[$i];
-        }
-    }
+    $left = array_filter(array_slice($keys, 1), fn($key) => strcasecmp($key, $pivot) < 0);
+    $right = array_filter(array_slice($keys, 1), fn($key) => strcasecmp($key, $pivot) >= 0);
 
     return array_merge(
         sortKeys($left),
