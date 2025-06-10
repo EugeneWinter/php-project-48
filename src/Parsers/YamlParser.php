@@ -24,12 +24,10 @@ function parse(string $content): stdClass
         if (!is_object($data)) {
             throw new Exception('YAML must represent an object');
         }
-
-        if (!$data instanceof stdClass) {
-            $data = (object) (array) $data;
-        }
-
-        return $data;
+        
+        return $data instanceof stdClass 
+            ? $data 
+            : (object) (array) $data;
     } catch (Exception $e) {
         throw new Exception("YAML parse error: {$e->getMessage()}");
     }
