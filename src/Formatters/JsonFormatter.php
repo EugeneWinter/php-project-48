@@ -87,9 +87,7 @@ function sortAssocArray(array $array): array
 
     return array_reduce(
         $sortedKeys,
-        function (array $acc, $key) use ($array): array {
-            return [...$acc, $key => $array[$key]];
-        },
+        fn(array $acc, $key) => [...$acc, $key => $array[$key]],
         []
     );
 }
@@ -126,19 +124,21 @@ function mergeSort(array $array, callable $comparator): array
  */
 function merge(array $left, array $right, callable $comparator): array
 {
-    $result = [];
-    $leftIndex = 0;
-    $rightIndex = 0;
-
-    while ($leftIndex < count($left) && $rightIndex < count($right)) {
-        if ($comparator($left[$leftIndex], $right[$rightIndex]) <= 0) {
-            $result[] = $left[$leftIndex];
-            $leftIndex++;
-        } else {
-            $result[] = $right[$rightIndex];
-            $rightIndex++;
-        }
-    }
-
-    return [...$result, ...array_slice($left, $leftIndex), ...array_slice($right, $rightIndex)];
+    return array_reduce(
+        $left,
+        function (array $acc, $leftItem) use ($right, $comparator) {
+            $rightItems = array_filter(
+                $right,
+                fn($rightItem) => $comparator($rightItem, $leftItem) < 0
+            );
+            
+            $remainingRight = array_diff_key($right, array_flip(array_keys($rightItems)));
+            
+            return [
+                'result' => [...$acc['result'], ...$rightItems, $leftItem],
+                'remainingRight' => $remainingRight
+            ];
+        },
+        ['result' => [], 'remainingRight' => $right]
+    )['result'];
 }
