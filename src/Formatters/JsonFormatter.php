@@ -14,6 +14,10 @@ function formatJson(array $diff): string
     return $json;
 }
 
+/**
+ * @param array<mixed> $diff
+ * @return array<mixed>
+ */
 function convertToStructuredJson(array $diff): array
 {
     $result = array_reduce(
@@ -40,29 +44,52 @@ function convertToStructuredJson(array $diff): array
                 default => prepareValueJson($node['value']),
             };
 
-            $acc[$key] = $value;
-            return $acc;
+            return [...$acc, $key => $value];
         },
         []
     );
 
-    ksort($result);
-
-    return $result;
+    return sortAssocArray($result);
 }
 
-
-function prepareValueJson(mixed $value): mixed
+/**
+ * @param mixed $value
+ * @return mixed
+ */
+function prepareValueJson(mixed $value)
 {
     if (is_object($value)) {
         $assoc = (array) $value;
-        ksort($assoc);
-
-        return array_map(
+        return sortAssocArray(array_map(
             fn($v) => prepareValueJson($v),
             $assoc
+        ));
+    }
+
+    if (is_array($value)) {
+        return array_map(
+            fn($v) => prepareValueJson($v),
+            $value
         );
     }
 
     return $value;
+}
+
+/**
+ * @param array<mixed> $array
+ * @return array<mixed>
+ */
+function sortAssocArray(array $array): array
+{
+    $keys = array_keys($array);
+    usort($keys, fn($a, $b) => strcmp((string)$a, (string)$b));
+
+    return array_reduce(
+        $keys,
+        function (array $acc, $key) use ($array): array {
+            return [...$acc, $key => $array[$key]];
+        },
+        []
+    );
 }
