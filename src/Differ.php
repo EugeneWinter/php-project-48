@@ -1,4 +1,4 @@
-<?phpMore actions
+<?php
 
 namespace Differ\Differ;
 
@@ -154,9 +154,12 @@ function prepareValue($value)
     if (is_object($value)) {
         $props = (array)$value;
         $result = new stdClass();
-        foreach (array_keys($props) as $k) {
-            $result->$k = prepareValue($props[$k]);
-        }
+        array_map(
+            function ($k) use ($props, &$result) {
+                $result->$k = prepareValue($props[$k]);
+            },
+            array_keys($props)
+        );
         return $result;
     }
     return $value;
@@ -169,9 +172,8 @@ function prepareValue($value)
 function sortKeys(array $keys): array
 {
     $sortedKeys = $keys;
-    usort($sortedKeys, fn($a, $b) => strcasecmp($a, $b));
-    return $sortedKeys;
-
+    natcasesort($sortedKeys);
+    return array_values($sortedKeys);
 }
 
 /**
