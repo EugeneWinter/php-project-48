@@ -78,22 +78,17 @@ function buildDiff(object $data1, object $data2): array
         array_keys($data2Array)
     ));
 
-    // Фильтрация null-ключей и приведение к string
-    $filteredKeys = array_filter(array_map('strval', $keys), fn($key) => $key !== '');
+    $filteredKeys = array_values(array_filter(
+        array_map('strval', $keys),
+        fn($key) => $key !== ''
+    ));
 
     $sortedKeys = sortKeys($filteredKeys);
 
-    return array_reduce(
-        $sortedKeys,
-        function ($carry, string $key) use ($data1, $data2) {
-            $node = buildNode($key, $data1, $data2);
-            if ($node !== null) {
-                $carry[] = $node;
-            }
-            return $carry;
-        },
-        []
-    );
+    return array_values(array_map(
+        fn(string $key) => buildNode($key, $data1, $data2),
+        $sortedKeys
+    ));
 }
 
 /**
@@ -163,13 +158,9 @@ function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
-        return array_reduce(
-            array_keys($props),
-            function ($carry, $k) use ($props) {
-                $carry->$k = prepareValue($props[$k]);
-                return $carry;
-            },
-            new stdClass()
+        return (object)array_map(
+            fn($prop) => prepareValue($prop),
+            $props
         );
     }
     return $value;
@@ -186,8 +177,16 @@ function sortKeys(array $keys): array
     }
 
     $pivot = $keys[0];
-    $left = array_filter(array_slice($keys, 1), fn($key) => strcasecmp($key, $pivot) < 0);
-    $right = array_filter(array_slice($keys, 1), fn($key) => strcasecmp($key, $pivot) >= 0);
+    $remaining = array_slice($keys, 1);
+
+    $left = array_values(array_filter(
+        $remaining,
+        fn($key) => strcasecmp($key, $pivot) < 0
+    ));
+    $right = array_values(array_filter(
+        $remaining,
+        fn($key) => strcasecmp($key, $pivot) >= 0
+    ));
 
     return array_merge(
         sortKeys($left),
