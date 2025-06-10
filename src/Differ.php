@@ -154,12 +154,9 @@ function prepareValue($value)
     if (is_object($value)) {
         $props = (array)$value;
         $result = new stdClass();
-        array_map(
-            function ($k) use ($props, &$result) {
-                $result->$k = prepareValue($props[$k]);
-            },
-            array_keys($props)
-        );
+        foreach (array_keys($props) as $k) {
+            $result->$k = prepareValue($props[$k]);
+        }
         return $result;
     }
     return $value;
