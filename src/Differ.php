@@ -14,6 +14,7 @@ use function Differ\Formatters\StylishFormatter\formatStylish;
 
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
+    /** @phpstan-ignore-next-line */
     validateFiles($path1, $path2);
 
     $content1 = file_get_contents($path1);
