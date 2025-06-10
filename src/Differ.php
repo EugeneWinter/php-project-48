@@ -70,9 +70,9 @@ function buildDiff(object $data1, object $data2): array
     $keys = array_unique(array_merge(
         array_keys($data1Array),
         array_keys($data2Array)
-    ));
+    );
 
-    sort($keys);
+    usort($keys, fn($a, $b) => strcmp($a, $b));
 
     return array_map(
         fn(string $key) => buildNode($key, $data1, $data2),
@@ -134,14 +134,10 @@ function prepareValue(mixed $value): mixed
 {
     if (is_object($value)) {
         $props = (array)$value;
-        $result = array_reduce(
-            array_keys($props),
-            function ($carry, $k) use ($props) {
-                $carry->{$k} = prepareValue($props[$k]);
-                return $carry;
-            },
-            new \stdClass()
-        );
+        $result = new \stdClass();
+        foreach ($props as $k => $v) {
+            $result->$k = prepareValue($v);
+        }
         return $result;
     }
     return $value;
