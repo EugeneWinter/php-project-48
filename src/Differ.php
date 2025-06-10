@@ -17,10 +17,13 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
     validateFiles($path1, $path2);
 
     $content1 = file_get_contents($path1);
-    $content2 = file_get_contents($path2);
+    if ($content1 === false) {
+        throw new RuntimeException("Failed to read file: {$path1}");
+    }
 
-    if ($content1 === false || $content2 === false) {
-        throw new RuntimeException('Failed to read file contents');
+    $content2 = file_get_contents($path2);
+    if ($content2 === false) {
+        throw new RuntimeException("Failed to read file: {$path2}");
     }
 
     try {
@@ -43,13 +46,7 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
 
     $diff = buildDiff($data1, $data2);
 
-    try {
-        return formatDiff($diff, $format);
-    } catch (Exception $e) {
-        throw new RuntimeException(
-            sprintf('Format error: %s', $e->getMessage())
-        );
-    }
+    return formatDiff($diff, $format);
 }
 
 function validateFiles(string $path1, string $path2): void
@@ -73,22 +70,22 @@ function buildDiff(object $data1, object $data2): array
     $data1Array = (array)$data1;
     $data2Array = (array)$data2;
 
-    $keys = array_values(array_unique(array_merge(
+    $keys = array_unique(array_merge(
         array_keys($data1Array),
         array_keys($data2Array)
-    )));
+    ));
 
-    $filteredKeys = array_values(array_filter(
+    $filteredKeys = array_filter(
         array_map('strval', $keys),
         fn($key) => $key !== ''
-    ));
+    );
 
-    $sortedKeys = sortKeys($filteredKeys);
+    $sortedKeys = sortKeys(array_values($filteredKeys));
 
-    return array_values(array_map(
+    return array_map(
         fn(string $key) => buildNode($key, $data1, $data2),
         $sortedKeys
-    ));
+    );
 }
 
 /**
