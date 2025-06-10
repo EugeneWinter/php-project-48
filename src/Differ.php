@@ -11,8 +11,6 @@ use function Differ\Parsers\parse;
 use function Differ\Formatters\JsonFormatter\formatJson;
 use function Differ\Formatters\PlainFormatter\formatPlain;
 use function Differ\Formatters\StylishFormatter\formatStylish;
-use function Functional\sort;
-use function Functional\map;
 
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
@@ -78,14 +76,14 @@ function buildDiff(object $data1, object $data2): array
     $keys = array_unique(array_merge(
         array_keys($data1Array),
         array_keys($data2Array)
-    ));
+    );
 
     $sortedKeys = sortKeys($keys);
 
-    return map(
-        $sortedKeys,
-        fn(string $key): array => buildNode($key, $data1, $data2)
-    );
+    return array_values(array_map(
+        fn(string $key): array => buildNode($key, $data1, $data2),
+        $sortedKeys
+    ));
 }
 
 /**
@@ -156,14 +154,9 @@ function prepareValue($value)
     if (is_object($value)) {
         $props = (array)$value;
         $result = new stdClass();
-        array_reduce(
-            array_keys($props),
-            function ($carry, $k) use ($props) {
-                $carry->$k = prepareValue($props[$k]);
-                return $carry;
-            },
-            $result
-        );
+        foreach (array_keys($props) as $k) {
+            $result->$k = prepareValue($props[$k]);
+        }
         return $result;
     }
     return $value;
@@ -175,10 +168,9 @@ function prepareValue($value)
  */
 function sortKeys(array $keys): array
 {
-    return sort(
-        $keys,
-        fn(string $a, string $b): int => strcasecmp($a, $b)
-    );
+    $sortedKeys = $keys;
+    usort($sortedKeys, fn($a, $b) => strcasecmp($a, $b));
+    return $sortedKeys;
 }
 
 /**
