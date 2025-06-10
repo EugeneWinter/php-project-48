@@ -1,3 +1,4 @@
+@@ -1,186 +1,205 @@
 <?php
 
 namespace Differ\Differ;
@@ -149,18 +150,16 @@ function isObject($value): bool
  * @param mixed $value
  * @return mixed
  */
+
 function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
-        return array_reduce(
-            array_keys($props),
-            function (stdClass $result, string $k) use ($props): stdClass {
-                $result->$k = prepareValue($props[$k]);
-                return $result;
-            },
-            new stdClass()
-        );
+        $result = new stdClass();
+        foreach (array_keys($props) as $k) {
+            $result->$k = prepareValue($props[$k]);
+        }
+        return $result;
     }
     return $value;
 }
@@ -171,24 +170,8 @@ function prepareValue($value)
  */
 function sortKeys(array $keys): array
 {
-    return array_reduce(
-        $keys,
-        function (array $carry, string $key): array {
-            $inserted = false;
-            return array_reduce(
-                $carry,
-                function (array $acc, string $item) use ($key, &$inserted): array {
-                    if (!$inserted && strnatcmp($key, $item) < 0) {
-                        $inserted = true;
-                        return [...$acc, $key, $item];
-                    }
-                    return [...$acc, $item];
-                },
-                []
-            );
-        },
-        []
-    );
+    usort($keys, fn($a, $b) => strnatcmp($a, $b));
+    return $keys;
 }
 
 /**
