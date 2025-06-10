@@ -73,10 +73,10 @@ function buildDiff(object $data1, object $data2): array
     $data1Array = (array)$data1;
     $data2Array = (array)$data2;
 
-    $keys = array_unique(array_merge(
+    $keys = array_values(array_unique(array_merge(
         array_keys($data1Array),
         array_keys($data2Array)
-    ));
+    )));
 
     $filteredKeys = array_values(array_filter(
         array_map('strval', $keys),
@@ -85,10 +85,12 @@ function buildDiff(object $data1, object $data2): array
 
     $sortedKeys = sortKeys($filteredKeys);
 
-    return array_values(array_map(
+    $result = array_map(
         fn(string $key) => buildNode($key, $data1, $data2),
         $sortedKeys
-    ));
+    );
+
+    return array_values($result);
 }
 
 /**
@@ -158,10 +160,11 @@ function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
-        return (object)array_map(
+        $preparedProps = array_map(
             fn($prop) => prepareValue($prop),
             $props
         );
+        return (object)$preparedProps;
     }
     return $value;
 }
