@@ -7,7 +7,11 @@ function formatJson(array $diff): string
     $structured = convertToStructuredJson($diff);
     $json = json_encode($structured, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-    return $json ?: throw new \RuntimeException('Failed to encode JSON');
+    if ($json === false) {
+        throw new \RuntimeException('Failed to encode JSON');
+    }
+
+    return $json;
 }
 
 /**
@@ -16,17 +20,14 @@ function formatJson(array $diff): string
  */
 function convertToStructuredJson(array $diff): array
 {
-    $result = array_reduce(
+    return sortAssocArray(array_reduce(
         $diff,
-        function (array $acc, array $node): array {
-            $key = $node['key'];
-            $value = processNodeForJson($node);
-            return [...$acc, $key => $value];
-        },
+        fn(array $acc, array $node): array => [
+            ...$acc,
+            $node['key'] => processNodeForJson($node)
+        ],
         []
-    );
-
-    return sortAssocArray($result);
+    ));
 }
 
 /**
@@ -62,9 +63,9 @@ function prepareValueJson(mixed $value)
 {
     return match (true) {
         is_object($value) => sortAssocArray(
-            arrayMapRecursive(prepareValueJson(...), (array)$value)
+            array_map(prepareValueJson(...), (array)$value)
         ),
-        is_array($value) => arrayMapRecursive(prepareValueJson(...), $value),
+        is_array($value) => array_map(prepareValueJson(...), $value),
         default => $value
     };
 }
@@ -78,10 +79,11 @@ function sortAssocArray(array $array): array
     $keys = array_keys($array);
     $sortedKeys = mergeSort($keys, fn($a, $b) => strcmp((string)$a, (string)$b));
 
-    return array_combine($sortedKeys, array_map(
-        fn($key) => $array[$key],
-        $sortedKeys
-    ));
+    return array_reduce(
+        $sortedKeys,
+        fn(array $acc, $key): array => [...$acc, $key => $array[$key]],
+        []
+    );
 }
 
 /**
@@ -113,28 +115,44 @@ function mergeSort(array $array, callable $comparator): array
  */
 function merge(array $left, array $right, callable $comparator): array
 {
-    $result = [];
-    $leftIndex = $rightIndex = 0;
-
-    while ($leftIndex < count($left) && $rightIndex < count($right)) {
-        $result[] = $comparator($left[$leftIndex], $right[$rightIndex]) <= 0
-            ? $left[$leftIndex++]
-            : $right[$rightIndex++];
-    }
-
-    return [...$result, ...array_slice($left, $leftIndex), ...array_slice($right, $rightIndex)];
+    return _merge($left, $right, $comparator, 0, 0, []);
 }
 
 /**
  * @template T
- * @param callable(mixed): T $callback
- * @param array<mixed> $array
+ * @param array<T> $left
+ * @param array<T> $right
+ * @param callable(T, T): int $comparator
+ * @param int $leftIndex
+ * @param int $rightIndex
+ * @param array<T> $result
  * @return array<T>
  */
-function arrayMapRecursive(callable $callback, array $array): array
+function _merge(array $left, array $right, callable $comparator, int $leftIndex, int $rightIndex, array $result): array
 {
-    return array_map(
-        fn($item) => is_array($item) ? arrayMapRecursive($callback, $item) : $callback($item),
-        $array
-    );
+    if ($leftIndex >= count($left)) {
+        return [...$result, ...array_slice($right, $rightIndex)];
+    }
+
+    if ($rightIndex >= count($right)) {
+        return [...$result, ...array_slice($left, $leftIndex)];
+    }
+
+    return $comparator($left[$leftIndex], $right[$rightIndex]) <= 0
+        ? _merge(
+            $left,
+            $right,
+            $comparator,
+            $leftIndex + 1,
+            $rightIndex,
+            [...$result, $left[$leftIndex]]
+        )
+        : _merge(
+            $left,
+            $right,
+            $comparator,
+            $leftIndex,
+            $rightIndex + 1,
+            [...$result, $right[$rightIndex]]
+        );
 }
