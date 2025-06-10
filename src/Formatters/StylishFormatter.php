@@ -4,11 +4,12 @@ namespace Differ\Formatters\StylishFormatter;
 
 function formatStylish(array $diff, int $depth = 0): string
 {
-    $lines = array_map(function ($node) use ($depth) {
-        $indent = str_repeat('    ', $depth);
+    $indent = str_repeat('    ', $depth);
+    $lines = array_map(function ($node) use ($depth, $indent) {
         $key = $node['key'];
-        
-        switch ($node['type']) {
+        $type = $node['type'];
+
+        switch ($type) {
             case 'nested':
                 $children = formatStylish($node['children'], $depth + 1);
                 return "{$indent}    {$key}: {\n{$children}\n{$indent}    }";
@@ -29,10 +30,14 @@ function formatStylish(array $diff, int $depth = 0): string
             case 'unchanged':
                 $value = stringify($node['value'], $depth + 1);
                 return "{$indent}    {$key}: {$value}";
+            
+            default:
+                throw new \Exception("Unknown node type: {$type}");
         }
     }, $diff);
 
-    return implode("\n", $lines);
+    $result = implode("\n", $lines);
+    return $depth === 0 ? "{\n{$result}\n}" : $result;
 }
 
 function stringify(mixed $value, int $depth): string
