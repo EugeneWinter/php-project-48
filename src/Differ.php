@@ -78,7 +78,7 @@ function buildDiff(object $data1, object $data2): array
         array_keys($data2Array)
     ));
 
-    $sortedKeys = array_values(sortKeys($keys));
+    $sortedKeys = sortKeys($keys);
 
     return array_map(
         fn(string $key): array => buildNode($key, $data1, $data2),
@@ -153,14 +153,11 @@ function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
-        return array_reduce(
-            array_keys($props),
-            function ($result, $k) use ($props) {
-                $result->$k = prepareValue($props[$k]);
-                return $result;
-            },
-            new stdClass()
-        );
+        $result = new stdClass();
+        foreach (array_keys($props) as $k) {
+            $result->$k = prepareValue($props[$k]);
+        }
+        return $result;
     }
     return $value;
 }
@@ -171,9 +168,8 @@ function prepareValue($value)
  */
 function sortKeys(array $keys): array
 {
-    $sorted = $keys;
-    natsort($sorted);
-    return $sorted;
+    usort($keys, fn($a, $b) => strnatcmp($a, $b));
+    return $keys;
 }
 
 /**
