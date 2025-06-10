@@ -4,6 +4,7 @@ namespace Differ\Differ;
 
 use RuntimeException;
 use Exception;
+use stdClass;
 
 use function Differ\Parsers\getFormat;
 use function Differ\Parsers\parse;
@@ -62,7 +63,12 @@ function validateFiles(string $path1, string $path2): void
     }
 }
 
-function buildDiff(object $data1, object $data2): array
+/**
+ * @param stdClass $data1
+ * @param stdClass $data2
+ * @return array<int, array<string, mixed>>
+ */
+function buildDiff(stdClass $data1, stdClass $data2): array
 {
     $data1Array = (array)$data1;
     $data2Array = (array)$data2;
@@ -72,15 +78,21 @@ function buildDiff(object $data1, object $data2): array
         array_keys($data2Array)
     ));
 
-    usort($keys, fn($a, $b) => strcmp($a, $b));
+    $sortedKeys = array_values(array_sort($keys));
 
     return array_map(
-        fn(string $key) => buildNode($key, $data1, $data2),
-        $keys
+        fn(string $key): array => buildNode($key, $data1, $data2),
+        $sortedKeys
     );
 }
 
-function buildNode(string $key, object $data1, object $data2): array
+/**
+ * @param string $key
+ * @param stdClass $data1
+ * @param stdClass $data2
+ * @return array<string, mixed>
+ */
+function buildNode(string $key, stdClass $data1, stdClass $data2): array
 {
     $value1 = property_exists($data1, $key) ? $data1->$key : null;
     $value2 = property_exists($data2, $key) ? $data2->$key : null;
@@ -125,30 +137,54 @@ function buildNode(string $key, object $data1, object $data2): array
     ];
 }
 
-function isObject(mixed $value): bool
+/**
+ * @param mixed $value
+ */
+function isObject($value): bool
 {
     return is_object($value) && !($value instanceof \DateTime);
 }
 
-function prepareValue(mixed $value): mixed
+/**
+ * @param mixed $value
+ * @return mixed
+ */
+function prepareValue($value)
 {
     if (is_object($value)) {
         $props = (array)$value;
-        $result = new \stdClass();
-        foreach ($props as $k => $v) {
-            $result->$k = prepareValue($v);
-        }
+        $result = new stdClass();
+        array_map(
+            function ($k, $v) use ($result) {
+                $result->$k = prepareValue($v);
+            },
+            array_keys($props),
+            array_values($props)
+        );
         return $result;
     }
     return $value;
 }
 
+/**
+ * @param array<string> $array
+ * @return array<string>
+ */
+function array_sort(array $array): array
+{
+    usort($array, fn($a, $b) => strcmp($a, $b));
+    return $array;
+}
+
+/**
+ * @param array<int, array<string, mixed>> $diff
+ */
 function formatDiff(array $diff, string $format): string
 {
     return match ($format) {
         'stylish' => formatStylish($diff),
         'plain' => formatPlain($diff),
         'json' => formatJson($diff),
-        default => throw new \RuntimeException("Unknown format: {$format}"),
+        default => throw new RuntimeException("Unknown format: {$format}"),
     };
 }
