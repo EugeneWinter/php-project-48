@@ -126,19 +126,42 @@ function mergeSort(array $array, callable $comparator): array
  */
 function merge(array $left, array $right, callable $comparator): array
 {
-    $result = [];
-    $leftIndex = 0;
-    $rightIndex = 0;
+    return _merge($left, $right, $comparator, 0, 0, []);
+}
 
-    while ($leftIndex < count($left) && $rightIndex < count($right)) {
-        if ($comparator($left[$leftIndex], $right[$rightIndex]) <= 0) {
-            $result[] = $left[$leftIndex];
-            $leftIndex++;
-        } else {
-            $result[] = $right[$rightIndex];
-            $rightIndex++;
-        }
+/**
+ * @template T
+ * @param array<T> $left
+ * @param array<T> $right
+ * @param callable(T, T): int $comparator
+ * @param int $leftIndex
+ * @param int $rightIndex
+ * @param array<T> $result
+ * @return array<T>
+ */
+function _merge(array $left, array $right, callable $comparator, int $leftIndex, int $rightIndex, array $result): array
+{
+    if ($leftIndex >= count($left) || $rightIndex >= count($right)) {
+        return [...$result, ...array_slice($left, $leftIndex), ...array_slice($right, $rightIndex)];
     }
 
-    return [...$result, ...array_slice($left, $leftIndex), ...array_slice($right, $rightIndex)];
+    if ($comparator($left[$leftIndex], $right[$rightIndex]) <= 0) {
+        return _merge(
+            $left,
+            $right,
+            $comparator,
+            $leftIndex + 1,
+            $rightIndex,
+            [...$result, $left[$leftIndex]]
+        );
+    }
+
+    return _merge(
+        $left,
+        $right,
+        $comparator,
+        $leftIndex,
+        $rightIndex + 1,
+        [...$result, $right[$rightIndex]]
+    );
 }
