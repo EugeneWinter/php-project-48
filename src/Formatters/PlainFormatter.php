@@ -6,40 +6,87 @@ function formatPlain(array $diff): string
 {
     $sortedDiff = sortDiffRecursive($diff);
     $lines = buildLines($sortedDiff);
-    $sortedLines = array_sort($lines);
+    $sortedLines = sortArray($lines);
     return implode("\n", $sortedLines);
 }
 
 function sortDiffRecursive(array $diff): array
 {
-    $sorted = array_sort(
+    $sorted = sortArray(
         $diff,
-        fn($a, $b) => strcmp($a['key'], $b['key'])
+        fn(array $a, array $b): int => $a['key'] <=> $b['key']
     );
 
     return array_map(
-        function ($node) {
-            if ($node['type'] === 'nested') {
-                return [
-                    ...$node,
-                    'children' => sortDiffRecursive($node['children']),
-                ];
-            }
-            return $node;
+        function (array $node): array {
+            return $node['type'] === 'nested'
+                ? [...$node, 'children' => sortDiffRecursive($node['children'])]
+                : $node;
         },
         $sorted
     );
 }
 
-function array_sort(array $array, ?callable $callback = null): array
+/**
+ * @param array<mixed> $array
+ * @param callable(mixed, mixed): int|null $callback
+ * @return array<mixed>
+ */
+function sortArray(array $array, ?callable $callback = null): array
 {
-    $sorted = $array;
-    if ($callback) {
-        uasort($sorted, $callback);
-    } else {
-        asort($sorted);
+    $comparator = $callback ?? fn($a, $b) => $a <=> $b;
+    return mergeSort($array, $comparator);
+}
+
+/**
+ * @param array<mixed> $array
+ * @param callable(mixed, mixed): int $comparator
+ * @return array<mixed>
+ */
+function mergeSort(array $array, callable $comparator): array
+{
+    if (count($array) <= 1) {
+        return $array;
     }
-    return $sorted;
+
+    $mid = (int)(count($array) / 2);
+    $left = array_slice($array, 0, $mid);
+    $right = array_slice($array, $mid);
+
+    return merge(
+        mergeSort($left, $comparator),
+        mergeSort($right, $comparator),
+        $comparator
+    );
+}
+
+/**
+ * @param array<mixed> $left
+ * @param array<mixed> $right
+ * @param callable(mixed, mixed): int $comparator
+ * @return array<mixed>
+ */
+function merge(array $left, array $right, callable $comparator): array
+{
+    $result = [];
+    $leftIndex = 0;
+    $rightIndex = 0;
+
+    while ($leftIndex < count($left) && $rightIndex < count($right)) {
+        if ($comparator($left[$leftIndex], $right[$rightIndex]) <= 0) {
+            $result[] = $left[$leftIndex];
+            $leftIndex++;
+        } else {
+            $result[] = $right[$rightIndex];
+            $rightIndex++;
+        }
+    }
+
+    return [
+        ...$result,
+        ...array_slice($left, $leftIndex),
+        ...array_slice($right, $rightIndex)
+    ];
 }
 
 function buildLines(array $diff, string $path = ''): array
