@@ -13,24 +13,24 @@ function formatStylish(array $diff, int $depth = 0): string
             case 'nested':
                 $children = formatStylish($node['children'], $depth + 1);
                 return "{$indent}    {$key}: {\n{$children}\n{$indent}    }";
-            
+
             case 'added':
                 $value = stringify($node['value'], $depth + 1);
                 return "{$indent}  + {$key}: {$value}";
-            
+
             case 'removed':
                 $value = stringify($node['value'], $depth + 1);
                 return "{$indent}  - {$key}: {$value}";
-            
+
             case 'changed':
                 $oldValue = stringify($node['oldValue'], $depth + 1);
                 $newValue = stringify($node['newValue'], $depth + 1);
                 return "{$indent}  - {$key}: {$oldValue}\n{$indent}  + {$key}: {$newValue}";
-            
+
             case 'unchanged':
                 $value = stringify($node['value'], $depth + 1);
                 return "{$indent}    {$key}: {$value}";
-            
+
             default:
                 throw new \Exception("Unknown node type: {$type}");
         }
