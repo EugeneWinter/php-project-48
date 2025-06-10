@@ -83,7 +83,7 @@ function prepareValueJson(mixed $value)
 function sortAssocArray(array $array): array
 {
     $keys = array_keys($array);
-    $sortedKeys = array_sort_by($keys, fn($key) => (string)$key);
+    $sortedKeys = mergeSort($keys, fn($a, $b) => strcmp((string)$a, (string)$b));
 
     return array_reduce(
         $sortedKeys,
@@ -97,12 +97,48 @@ function sortAssocArray(array $array): array
 /**
  * @template T
  * @param array<T> $array
- * @param callable(T): mixed $callback
+ * @param callable(T, T): int $comparator
  * @return array<T>
  */
-function array_sort_by(array $array, callable $callback): array
+function mergeSort(array $array, callable $comparator): array
 {
-    $sorted = $array;
-    usort($sorted, fn($a, $b) => strcmp($callback($a), $callback($b)));
-    return $sorted;
+    if (count($array) <= 1) {
+        return $array;
+    }
+
+    $mid = (int)(count($array) / 2);
+    $left = array_slice($array, 0, $mid);
+    $right = array_slice($array, $mid);
+
+    return merge(
+        mergeSort($left, $comparator),
+        mergeSort($right, $comparator),
+        $comparator
+    );
+}
+
+/**
+ * @template T
+ * @param array<T> $left
+ * @param array<T> $right
+ * @param callable(T, T): int $comparator
+ * @return array<T>
+ */
+function merge(array $left, array $right, callable $comparator): array
+{
+    $result = [];
+    $leftIndex = 0;
+    $rightIndex = 0;
+
+    while ($leftIndex < count($left) && $rightIndex < count($right)) {
+        if ($comparator($left[$leftIndex], $right[$rightIndex]) <= 0) {
+            $result[] = $left[$leftIndex];
+            $leftIndex++;
+        } else {
+            $result[] = $right[$rightIndex];
+            $rightIndex++;
+        }
+    }
+
+    return [...$result, ...array_slice($left, $leftIndex), ...array_slice($right, $rightIndex)];
 }
