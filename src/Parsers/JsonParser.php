@@ -23,9 +23,9 @@ function parse(string $content): stdClass
         if (!is_object($data)) {
             throw new Exception('JSON must represent an object');
         }
-        
-        return $data instanceof stdClass 
-            ? $data 
+
+        return $data instanceof stdClass
+            ? $data
             : (object) (array) $data;
     } catch (Exception $e) {
         throw new Exception("JSON parse error: {$e->getMessage()}");
