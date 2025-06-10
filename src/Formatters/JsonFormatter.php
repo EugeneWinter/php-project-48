@@ -141,4 +141,4 @@ function merge(array $left, array $right, callable $comparator): array
     }
 
     return [...$result, ...array_slice($left, $leftIndex), ...array_slice($right, $rightIndex)];
-    
+}
