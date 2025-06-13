@@ -11,7 +11,8 @@ function format(array $diff): string
 function buildTree(array $diff): array
 {
     return array_reduce(
-        $diff, function ($acc, $node) {
+        $diff, function ($acc, $node) 
+        {
             $key = $node['key'];
             $acc[$key] = match ($node['type']) {
                 'added' => ['type' => 'added', 'value' => prepareValue($node['value'])],
@@ -25,7 +26,8 @@ function buildTree(array $diff): array
                 default => prepareValue($node['value'])
             };
             return $acc;
-        }, []
+        }, 
+        []
     );
 }
 

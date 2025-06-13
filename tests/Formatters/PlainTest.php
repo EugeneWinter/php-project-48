@@ -3,6 +3,7 @@
 namespace Differ\Tests\Formatters;
 
 use PHPUnit\Framework\TestCase;
+
 use function Differ\Formatters\format;
 
 class PlainTest extends TestCase

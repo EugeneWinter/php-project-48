@@ -11,18 +11,20 @@ function format(array $diff): string
 function buildLines(array $diff, string $path = ''): array
 {
     return array_reduce(
-        $diff, function ($acc, $node) use ($path) {
+        $diff, function ($acc, $node) use ($path) 
+        {
             $currentPath = $path === '' ? $node['key'] : "{$path}.{$node['key']}";
 
             return match ($node['type']) {
                 'added' => [...$acc, "Property '{$currentPath}' was added with value: " . stringifyValue($node['value'])],
                 'removed' => [...$acc, "Property '{$currentPath}' was removed"],
-                'changed' => [...$acc, "Property '{$currentPath}' was updated. From " . 
+                'changed' => [...$acc, "Property '{$currentPath}' was updated. From " .
                 stringifyValue($node['oldValue']) . " to " . stringifyValue($node['newValue'])],
                 'nested' => [...$acc, ...buildLines($node['children'], $currentPath)],
                 default => $acc
             };
-        }, []
+        }, 
+        []
     );
 }
 

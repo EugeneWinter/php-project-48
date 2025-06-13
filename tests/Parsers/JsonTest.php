@@ -4,6 +4,7 @@ namespace Differ\Tests\Parsers;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
+
 use function Differ\Parsers\parse;
 use function Differ\Parsers\getSupportedFormats;
 

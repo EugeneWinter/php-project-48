@@ -51,7 +51,7 @@ function buildDiff(object $data1, object $data2): array
         ...array_keys((array)$data2)
         ]
     );
-    
+
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
         sortKeys(array_filter($keys, fn($key) => $key !== ''))
