@@ -23,33 +23,13 @@ Options:
 DOC;
 
 try {
-    $response = $handler->handle($doc);
-
-    if ($response['--help']) {
-        echo $doc;
-        exit(0);
-    }
-
-    if ($response['--version']) {
-        echo "gendiff 1.0.0\n";
-        exit(0);
-    }
-
-    if (isset($response['<firstFile>']) && isset($response['<secondFile>'])) {
-        $firstFile = $response['<firstFile>'];
-        $secondFile = $response['<secondFile>'];
-        $format = $response['--format'] ?? 'stylish';
-
-        if (!is_string($firstFile) || !is_string($secondFile)) {
-            throw new \RuntimeException("File paths must be strings");
-        }
-
-        echo genDiff($firstFile, $secondFile, $format) . PHP_EOL;
-        exit(0);
-    }
-
-    echo $doc;
-    exit(1);
+  $response = $handler->handle($doc);
+  echo genDiff(
+      (string)$response['<firstFile>'], 
+      (string)$response['<secondFile>'], 
+      (string)($response['--format'] ?? 'stylish')
+  ) . PHP_EOL;
+  exit(0);
 } catch (\Exception $e) {
     echo "Error: " . $e->getMessage() . PHP_EOL;
     exit(1);
