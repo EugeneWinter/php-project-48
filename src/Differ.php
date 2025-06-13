@@ -109,7 +109,13 @@ function prepareValue(mixed $value): mixed
 
 function sortKeys(array $keys): array
 {
-    $sorted = $keys;
-    usort($sorted, fn($a, $b) => strcasecmp((string)$a, (string)$b));
-    return $sorted;
+    return array_reduce(
+        $keys,
+        function ($carry, $item) {
+            $carry[] = $item;
+            usort($carry, fn($a, $b) => strcasecmp((string)$a, (string)$b));
+            return $carry;
+        },
+        []
+    );
 }
