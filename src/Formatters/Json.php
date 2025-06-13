@@ -11,16 +11,16 @@ function format(array $diff): string
 function buildTree(array $diff): array
 {
     return array_reduce(
-        $diff, function ($acc, $node)
-        {
+        $diff,
+        function ($acc, $node) {
             $key = $node['key'];
             $acc[$key] = match ($node['type']) {
                 'added' => ['type' => 'added', 'value' => prepareValue($node['value'])],
                 'removed' => ['type' => 'removed', 'value' => prepareValue($node['value'])],
                 'changed' => [
-                'type' => 'changed',
-                'oldValue' => prepareValue($node['oldValue']),
-                'newValue' => prepareValue($node['newValue'])
+                    'type' => 'changed',
+                    'oldValue' => prepareValue($node['oldValue']),
+                    'newValue' => prepareValue($node['newValue'])
                 ],
                 'nested' => buildTree($node['children']),
                 default => prepareValue($node['value'])
