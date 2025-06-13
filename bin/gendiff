@@ -4,7 +4,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Docopt\Handler;
-use function Differ\Differ\genDiff;
+use function Differ\genDiff;
 
 $handler = new Handler();
 
@@ -23,13 +23,13 @@ Options:
 DOC;
 
 try {
-  $response = $handler->handle($doc);
-  echo genDiff(
-      (string)$response['<firstFile>'], 
-      (string)$response['<secondFile>'], 
-      (string)($response['--format'] ?? 'stylish')
-  ) . PHP_EOL;
-  exit(0);
+    $response = $handler->handle($doc);
+    echo genDiff(
+        (string)$response['<firstFile>'],
+        (string)$response['<secondFile>'],
+        (string)($response['--format'] ?? 'stylish')
+    ) . PHP_EOL;
+    exit(0);
 } catch (\Exception $e) {
     echo "Error: " . $e->getMessage() . PHP_EOL;
     exit(1);

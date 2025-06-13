@@ -5,7 +5,7 @@ namespace Differ\Tests;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Differ\Differ\genDiff;
+use function Differ\genDiff;
 use function Differ\Tests\getFixturePath;
 
 class DifferTest extends TestCase
@@ -27,13 +27,20 @@ class DifferTest extends TestCase
      */
     public function testGenDiff(string $file1, string $file2, string $format, string $expectedFile): void
     {
-        $expected = file_get_contents(getFixturePath($expectedFile));
-        $actual = genDiff(
-            getFixturePath($file1),
-            getFixturePath($file2),
-            $format
+        $expected = $this->normalizeLineEndings(file_get_contents(getFixturePath($expectedFile)));
+        $actual = $this->normalizeLineEndings(
+            genDiff(
+                getFixturePath($file1),
+                getFixturePath($file2),
+                $format
+            )
         );
         $this->assertEquals($expected, $actual);
+    }
+
+    private function normalizeLineEndings(string $content): string
+    {
+        return str_replace("\r\n", "\n", $content);
     }
 
     public function testFileNotFound(): void

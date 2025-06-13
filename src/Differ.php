@@ -1,13 +1,12 @@
 <?php
 
-namespace Differ\Differ;
+namespace Differ;
 
 use RuntimeException;
-use Exception;
 use stdClass;
 
 use function Differ\Parsers\parse;
-use function Differ\Formatters\format as formatDiff;
+use function Differ\Formatters\format;
 
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
 {
@@ -18,7 +17,7 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
     $data2 = parse($content2, getFileFormat($path2));
 
     $diff = buildDiff($data1, $data2);
-    return formatDiff($diff, $format);
+    return format($diff, $format);
 }
 
 function readFile(string $path): string
@@ -38,11 +37,10 @@ function readFile(string $path): string
 function getFileFormat(string $filePath): string
 {
     $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-    return match ($extension) {
-        'json' => 'json',
-        'yml', 'yaml' => 'yaml',
-        default => throw new RuntimeException("Unsupported file extension: {$extension}"),
-    };
+    if (!in_array($extension, ['json', 'yaml', 'yml'])) {
+        throw new RuntimeException("Unsupported file extension: {$extension}");
+    }
+    return $extension === 'yml' ? 'yaml' : $extension;
 }
 
 function buildDiff(object $data1, object $data2): array
@@ -108,13 +106,6 @@ function prepareValue(mixed $value): mixed
 
 function sortKeys(array $keys): array
 {
-    if (count($keys) <= 1) {
-        return $keys;
-    }
-
-    $pivot = $keys[0];
-    $left = array_filter($keys, fn($key) => strcasecmp($key, $pivot) < 0);
-    $right = array_filter($keys, fn($key) => strcasecmp($key, $pivot) >= 0);
-
-    return [...sortKeys($left), $pivot, ...sortKeys($right)];
+    usort($keys, fn($a, $b) => strcasecmp((string)$a, (string)$b));
+    return $keys;
 }

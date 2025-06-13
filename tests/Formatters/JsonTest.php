@@ -3,17 +3,10 @@
 namespace Differ\Tests\Formatters;
 
 use PHPUnit\Framework\TestCase;
+use function Differ\Formatters\format;
 
-use function Differ\Formatters\JsonFormatter\formatJson;
-
-/**
- * Тесты для JsonFormatter
- */
-class JsonFormatterTest extends TestCase
+class JsonTest extends TestCase
 {
-    /**
-     * Тестирует форматирование различий в JSON
-     */
     public function testFormat(): void
     {
         $diff = [
@@ -52,15 +45,12 @@ class JsonFormatterTest extends TestCase
 }
 JSON;
 
-        $actual = formatJson($diff);
+        $actual = format($diff, 'json');
 
         $this->assertJsonStringEqualsJsonString($expected, $actual);
         $this->assertJson($actual);
     }
 
-    /**
-     * Проверяет красивое форматирование JSON
-     */
     public function testFormatIsPrettyPrinted(): void
     {
         $diff = [
@@ -71,7 +61,7 @@ JSON;
             ],
         ];
 
-        $result = formatJson($diff);
+        $result = format($diff, 'json');
 
         $this->assertStringContainsString("\n", $result);
         $this->assertStringContainsString("    ", $result);

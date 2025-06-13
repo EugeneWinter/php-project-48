@@ -4,16 +4,15 @@ namespace Differ\Tests\Parsers;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
+use function Differ\Parsers\parse;
+use function Differ\Parsers\getSupportedFormats;
 
-use function Differ\Parsers\JsonParser\parse;
-use function Differ\Parsers\JsonParser\supports;
-
-class JsonParserTest extends TestCase
+class JsonTest extends TestCase
 {
     public function testParseValidJson(): void
     {
         $json = '{"key":"value"}';
-        $result = parse($json);
+        $result = parse($json, 'json');
 
         $this->assertIsObject($result);
         $this->assertEquals('value', $result->key);
@@ -24,13 +23,13 @@ class JsonParserTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('/JSON parse error/');
 
-        parse('invalid json');
+        parse('invalid json', 'json');
     }
 
     public function testSupportsJsonFormat(): void
     {
-        $this->assertTrue(supports('json'));
-        $this->assertFalse(supports('yaml'));
-        $this->assertFalse(supports('xml'));
+        $formats = getSupportedFormats();
+        $this->assertContains('json', $formats);
+        $this->assertNotContains('xml', $formats);
     }
 }

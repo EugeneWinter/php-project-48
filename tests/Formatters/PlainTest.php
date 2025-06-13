@@ -3,25 +3,10 @@
 namespace Differ\Tests\Formatters;
 
 use PHPUnit\Framework\TestCase;
+use function Differ\Formatters\format;
 
-use function Differ\Formatters\PlainFormatter\formatPlain;
-
-/**
- * Тесты для PlainFormatter
- *
- * @category DiffGenerator
- * @package  Tests\Formatters
- * @author   Eugene Winter <corvoattano200529@gmail.com>
- * @license  MIT https://opensource.org/licenses/MIT
- * @link     https://github.com/EugeneWinter/php-project-48
- */
-class PlainFormatterTest extends TestCase
+class PlainTest extends TestCase
 {
-    /**
-     * Тестирование форматирования различий
-     *
-     * @return void
-     */
     public function testFormat(): void
     {
         $diff = [
@@ -54,7 +39,7 @@ class PlainFormatterTest extends TestCase
             ]
         ];
 
-        $result = formatPlain($diff);
+        $result = format($diff, 'plain');
         $lines = explode("\n", $result);
 
         $this->assertCount(4, $lines);

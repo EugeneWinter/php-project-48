@@ -4,11 +4,10 @@ namespace Differ\Tests\Parsers;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
+use function Differ\Parsers\parse;
+use function Differ\Parsers\getSupportedFormats;
 
-use function Differ\Parsers\YamlParser\parse;
-use function Differ\Parsers\YamlParser\supports;
-
-class YamlParserTest extends TestCase
+class YamlTest extends TestCase
 {
     public function testParseValidYaml(): void
     {
@@ -19,7 +18,7 @@ nested:
   item2: 123
 YAML;
 
-        $result = parse($yaml);
+        $result = parse($yaml, 'yaml');
 
         $this->assertIsObject($result);
         $this->assertEquals('value', $result->key);
@@ -32,20 +31,20 @@ YAML;
         $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('/YAML parse error/');
 
-        parse("key: [value");
+        parse("key: [value", 'yaml');
     }
 
     public function testSupportsYamlFormats(): void
     {
-        $this->assertTrue(supports('yaml'));
-        $this->assertTrue(supports('yml'));
-        $this->assertFalse(supports('json'));
-        $this->assertFalse(supports('xml'));
+        $formats = getSupportedFormats();
+        $this->assertContains('yaml', $formats);
+        $this->assertContains('yml', $formats);
+        $this->assertNotContains('xml', $formats);
     }
 
     public function testParseEmptyYaml(): void
     {
-        $result = parse('');
+        $result = parse('', 'yaml');
         $this->assertIsObject($result);
         $this->assertEmpty(get_object_vars($result));
     }

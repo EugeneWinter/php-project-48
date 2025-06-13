@@ -27,7 +27,11 @@
         "files": [
             "src/Differ.php",
             "src/Formatters.php",
-            "src/Parsers.php"
+            "src/Parsers.php",
+            "src/Formatters/Json.php",
+            "src/Formatters/Plain.php",
+            "src/Formatters/Stylish.php",
+            "tests/Fixtures.php"
         ]
     },
     "autoload-dev": {

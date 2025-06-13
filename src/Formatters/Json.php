@@ -32,7 +32,7 @@ function buildTree(array $diff): array
 function prepareValue(mixed $value): mixed
 {
     if (is_object($value)) {
-        return array_map('self::prepareValue', (array)$value);
+        return array_map('Differ\Formatters\Json\prepareValue', (array)$value);
     }
     return $value;
 }
