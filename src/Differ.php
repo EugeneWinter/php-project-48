@@ -37,7 +37,7 @@ function readFile(string $path): string
 function getFileFormat(string $filePath): string
 {
     $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-    if (!in_array($extension, ['json', 'yaml', 'yml'])) {
+    if (!in_array($extension, ['json', 'yaml', 'yml'], true)) {
         throw new RuntimeException("Unsupported file extension: {$extension}");
     }
     return $extension === 'yml' ? 'yaml' : $extension;
@@ -47,14 +47,17 @@ function buildDiff(object $data1, object $data2): array
 {
     $keys = array_unique(
         [
-        ...array_keys((array)$data1),
-        ...array_keys((array)$data2)
+            ...array_keys((array)$data1),
+            ...array_keys((array)$data2)
         ]
     );
 
+    $filteredKeys = array_filter($keys, fn($key) => $key !== '');
+    $sortedKeys = sortKeys($filteredKeys);
+    
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
-        sortKeys(array_filter($keys, fn($key) => $key !== ''))
+        $sortedKeys
     );
 }
 
@@ -106,6 +109,7 @@ function prepareValue(mixed $value): mixed
 
 function sortKeys(array $keys): array
 {
-    usort($keys, fn($a, $b) => strcasecmp((string)$a, (string)$b));
-    return $keys;
+    $sorted = $keys;
+    usort($sorted, fn($a, $b) => strcasecmp((string)$a, (string)$b));
+    return $sorted;
 }
