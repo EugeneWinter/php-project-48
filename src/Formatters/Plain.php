@@ -11,7 +11,7 @@ function format(array $diff): string
 function buildLines(array $diff, string $path = ''): array
 {
     return array_reduce(
-        $diff, function ($acc, $node) use ($path) 
+        $diff, function ($acc, $node) use ($path)
         {
             $currentPath = $path === '' ? $node['key'] : "{$path}.{$node['key']}";
 
@@ -23,7 +23,7 @@ function buildLines(array $diff, string $path = ''): array
                 'nested' => [...$acc, ...buildLines($node['children'], $currentPath)],
                 default => $acc
             };
-        }, 
+        },
         []
     );
 }
