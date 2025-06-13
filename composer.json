@@ -27,13 +27,7 @@
         "files": [
             "src/Differ.php",
             "src/Formatters.php",
-            "src/Formatters/JsonFormatter.php",
-            "src/Formatters/PlainFormatter.php",
-            "src/Formatters/StylishFormatter.php",
-            "src/Parsers/JsonParser.php",
-            "src/Parsers/YamlParser.php",
-            "src/Parsers/ParserFactory.php",
-            "src/Parsers/ParserInterface.php"
+            "src/Parsers.php"
         ]
     },
     "autoload-dev": {
