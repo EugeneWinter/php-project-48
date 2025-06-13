@@ -125,11 +125,11 @@ function sortKeys(array $keys): array
                 },
                 []
             );
-            
+
             if (!$inserted) {
                 $result[] = $item;
             }
-            
+
             return $result;
         },
         []
