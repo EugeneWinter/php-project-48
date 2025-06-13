@@ -111,26 +111,24 @@ function sortKeys(array $keys): array
 {
     return array_reduce(
         $keys,
-        function (array $carry, string $item): array {
-            $inserted = false;
-            $result = array_reduce(
-                $carry,
-                function (array $acc, string $current) use ($item, &$inserted): array {
-                    if (!$inserted && strcasecmp($item, $current) < 0) {
-                        $acc[] = $item;
-                        $inserted = true;
-                    }
-                    $acc[] = $current;
-                    return $acc;
+        function (array $sorted, string $key) {
+            $index = array_reduce(
+                array_keys($sorted),
+                function (?int $carry, int $i) use ($key, $sorted) {
+                    return $carry === null && strcasecmp($key, $sorted[$i]) < 0 
+                        ? $i 
+                        : $carry;
                 },
-                []
+                null
             );
 
-            if (!$inserted) {
-                $result[] = $item;
-            }
-
-            return $result;
+            return $index === null
+                ? [...$sorted, $key]
+                : [
+                    ...array_slice($sorted, 0, $index),
+                    $key,
+                    ...array_slice($sorted, $index)
+                ];
         },
         []
     );
