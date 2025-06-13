@@ -5,7 +5,7 @@ namespace Differ\Tests;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Differ\genDiff;
+use function Differ\Differ\genDiff;
 use function Differ\Tests\getFixturePath;
 
 class DifferTest extends TestCase
