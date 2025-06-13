@@ -115,8 +115,8 @@ function sortKeys(array $keys): array
             $index = array_reduce(
                 array_keys($sorted),
                 function (?int $carry, int $i) use ($key, $sorted) {
-                    return $carry === null && strcasecmp($key, $sorted[$i]) < 0 
-                        ? $i 
+                    return $carry === null && strcasecmp($key, $sorted[$i]) < 0
+                        ? $i
                         : $carry;
                 },
                 null
