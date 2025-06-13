@@ -25,7 +25,7 @@ function buildTree(array $diff): array
                 'nested' => buildTree($node['children']),
                 default => prepareValue($node['value'])
             };
-            
+
             return array_merge($acc, [$key => $value]);
         },
         []
