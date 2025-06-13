@@ -54,7 +54,7 @@ function buildDiff(object $data1, object $data2): array
 
     $filteredKeys = array_filter($keys, fn($key) => $key !== '');
     $sortedKeys = sortKeys($filteredKeys);
-    
+
     return array_map(
         fn($key) => buildNode($key, $data1, $data2),
         $sortedKeys
