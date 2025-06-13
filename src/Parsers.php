@@ -23,7 +23,7 @@ function parseJson(string $content): stdClass
         }
 
         $data = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
-        return is_object($data) ? $data : (object) $data;
+        return is_object($data) ? ($data instanceof stdClass ? $data : (object) (array) $data) : (object) $data;
     } catch (\JsonException $e) {
         throw new Exception("JSON parse error: {$e->getMessage()}");
     }
@@ -37,7 +37,7 @@ function parseYaml(string $content): stdClass
         }
 
         $data = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
-        return is_object($data) ? $data : (object) $data;
+        return is_object($data) ? ($data instanceof stdClass ? $data : (object) (array) $data) : (object) $data;
     } catch (\Exception $e) {
         throw new Exception("YAML parse error: {$e->getMessage()}");
     }
