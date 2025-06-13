@@ -12,9 +12,9 @@ function buildTree(array $diff): array
 {
     return array_reduce(
         $diff,
-        function ($acc, $node) {
+        function (array $acc, array $node): array {
             $key = $node['key'];
-            $acc[$key] = match ($node['type']) {
+            $value = match ($node['type']) {
                 'added' => ['type' => 'added', 'value' => prepareValue($node['value'])],
                 'removed' => ['type' => 'removed', 'value' => prepareValue($node['value'])],
                 'changed' => [
@@ -25,7 +25,8 @@ function buildTree(array $diff): array
                 'nested' => buildTree($node['children']),
                 default => prepareValue($node['value'])
             };
-            return $acc;
+            
+            return array_merge($acc, [$key => $value]);
         },
         []
     );
