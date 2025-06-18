@@ -6,6 +6,8 @@ use RuntimeException;
 use stdClass;
 
 use function Differ\Parsers\parse;
+use function Differ\Parsers\getFileFormat;
+use function Differ\Parsers\readFile;
 use function Differ\Formatters\format;
 
 function genDiff(string $path1, string $path2, string $format = 'stylish'): string
@@ -18,29 +20,6 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
 
     $diff = buildDiff($data1, $data2);
     return format($diff, $format);
-}
-
-function readFile(string $path): string
-{
-    if (!file_exists($path)) {
-        throw new RuntimeException("File not found: {$path}");
-    }
-
-    $content = file_get_contents($path);
-    if ($content === false) {
-        throw new RuntimeException("Failed to read file: {$path}");
-    }
-
-    return $content;
-}
-
-function getFileFormat(string $filePath): string
-{
-    $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-    if (!in_array($extension, ['json', 'yaml', 'yml'], true)) {
-        throw new RuntimeException("Unsupported file extension: {$extension}");
-    }
-    return $extension === 'yml' ? 'yaml' : $extension;
 }
 
 function buildDiff(object $data1, object $data2): array

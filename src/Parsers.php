@@ -2,6 +2,7 @@
 
 namespace Differ\Parsers;
 
+use RuntimeException;
 use Exception;
 use stdClass;
 use Symfony\Component\Yaml\Yaml;
@@ -56,4 +57,27 @@ function parseYaml(string $content): stdClass
 function getSupportedFormats(): array
 {
     return ['json', 'yaml', 'yml'];
+}
+
+function readFile(string $path): string
+{
+    if (!file_exists($path)) {
+        throw new RuntimeException("File not found: {$path}");
+    }
+
+    $content = file_get_contents($path);
+    if ($content === false) {
+        throw new RuntimeException("Failed to read file: {$path}");
+    }
+
+    return $content;
+}
+
+function getFileFormat(string $filePath): string
+{
+    $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+    if (!in_array($extension, ['json', 'yaml', 'yml'], true)) {
+        throw new RuntimeException("Unsupported file extension: {$extension}");
+    }
+    return $extension === 'yml' ? 'yaml' : $extension;
 }
